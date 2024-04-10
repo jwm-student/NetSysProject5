@@ -2,12 +2,15 @@
 .SILENT:
 
 src_files := $(shell find -type f -name '*.cpp')
+LDFLAGS		= -lpthread
+
+OBJS = network/Client.cpp network/DataReceiver.cpp main.cpp
 
 integration: $(src_files)
-	echo 'Building integration project...'
-	g++ $(src_files) -lpthread -o integration
-	echo 'done!'
+	g++ $(LDFLAGS) $(OBJS) -o integration
 
 clean:
 	rm integration
 
+# g++ -lpthread network/Client.cpp network/DataReceiver.cpp main.cpp -lws2_32 -o integration
+#./integration
