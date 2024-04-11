@@ -24,36 +24,19 @@ std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
 using namespace std;
 
-void readInput(BlockingQueue< Message >*senderQueue) {
-	while (true) {
-		string input;
-		getline(cin, input); //read input from stdin
-		//cout << "Input: " << bla << endl;
-		int sizeDiff = 32 - input.size();
-		for (int i = 0; i < sizeDiff; i++){
-			input.append("0");
-		}
-
-		vector<char> char_vec(input.begin(), input.end()); // put input in char vector
-		Message sendMessage;
-		if (char_vec.size() > 2) {
-			sendMessage = Message(DATA, char_vec);
-		}
-		else {
-			sendMessage = Message(DATA_SHORT, char_vec);
-		}		
-		senderQueue->push(sendMessage); // put char vector in the senderQueue
-	}
-}
-
 int main() {
 	BlockingQueue< Message > receiverQueue; // Queue messages will arrive in
 	BlockingQueue< Message > senderQueue; // Queue for data to transmit
 
-	Client client = Client(SERVER_ADDR, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
+	string addrInput;
+	getline(cin,addrInput);
+	char my_addr = addrInput.at(0);
+
+	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
+
 	client.startThread();
 
-	thread inputHandler(readInput, &senderQueue);
+	thread inputHandler(&Client::readInput, &client, &senderQueue, client.getMyAddr());
 	
 	// Handle messages from the server / audio framework
 	while(true){
@@ -102,4 +85,3 @@ int main() {
 	}
 	
 }
-
