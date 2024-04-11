@@ -29,6 +29,11 @@ void readInput(BlockingQueue< Message >*senderQueue) {
 		string input;
 		getline(cin, input); //read input from stdin
 		//cout << "Input: " << bla << endl;
+		int sizeDiff = 32 - input.size();
+		for (int i = 0; i < sizeDiff; i++){
+			input.append("0");
+		}
+
 		vector<char> char_vec(input.begin(), input.end()); // put input in char vector
 		Message sendMessage;
 		if (char_vec.size() > 2) {
