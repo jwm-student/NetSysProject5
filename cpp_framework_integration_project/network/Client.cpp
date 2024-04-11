@@ -40,25 +40,6 @@ void Client::setMyAddr(char newAddr){
 char Client::getMyAddr(){
 	return myAddr;
 }
-void Client::readInput(BlockingQueue< Message >*senderQueue, char addr) {
-	while (true) {
-		string input;
-		getline(cin, input); //read input from stdin
-
-		string finalInput = input + "0000000000000000000000000000000"; // zero padding
-		finalInput.insert(0, 1, addr); // insert addr at front
-
-		vector<char> char_vec(finalInput.begin(), finalInput.end()); // put input in char vector
-		Message sendMessage;
-		if (char_vec.size() > 2) {
-			sendMessage = Message(DATA, char_vec);
-		}
-		else {
-			sendMessage = Message(DATA_SHORT, char_vec);
-		}		
-		senderQueue->push(sendMessage); // put char vector in the senderQueue
-	}
-}
 
 int Client::openSocket() {
 #ifdef _WIN32
