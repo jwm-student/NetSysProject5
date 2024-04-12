@@ -2,6 +2,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include <chrono>
 
 #include "utils/BlockingQueue.h"
 #include "network/Client.h"
@@ -19,13 +20,10 @@ std::string SERVER_ADDR = "netsys.ewi.utwente.nl"; //"127.0.0.1"
 // The port to connect to. 8954 for the simulation server
 int SERVER_PORT = 8954;
 // The frequency to connect on.
-int FREQUENCY = 8000;//TODO: Set this to your group frequency!
+int FREQUENCY = 8090;//TODO: Set this to your group frequency!
 // The token you received for your frequency range
 std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
-void setReceivedMessageType(Message){
-
-}
 
 using namespace std;
 void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidance* AC) {
@@ -38,21 +36,34 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidan
 
 		vector<char> char_vec(finalInput.begin(), finalInput.end()); // put input in char vector
 		Message sendMessage;
-		// MessageType curMessageType = AC->getReceivedMessageType().type;
-		// std::cout<< "cur Mess Type " << curMessageType << std::endl;
 		if (char_vec.size() > 2) {
 			sendMessage = Message(DATA, char_vec);
 		}
 		else {
 			sendMessage = Message(DATA_SHORT, char_vec);
 		}
+		//Deze functie moet recursive zijn. Dan fix je het probleem dat je wel collide bij 3 of meer nodes.
 		//DO not send if busy
 		if(AC->getReceivedMessageType().type == BUSY){
-			printf("ik ben busy");
-			break;
+			while(BUSY){
+				int rn = (rand() % 50);
+				// sleep for random ms
+				// recheck if newType is not BUSY
+				if(!(AC->getReceivedMessageType().type == BUSY)){
+					std::cout<< "slept for " << rn << std::endl;
+					break;
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(rn));
+
+			}
+			//if out of BUSY
+			//try to resend message
+			printf(" uit de while busy loop ");
+			senderQueue->push(sendMessage); // put char vector in the senderQueue
+		} else {
+			printf("stuur dit als je als eerst mag");
+			senderQueue->push(sendMessage); // put char vector in the senderQueue
 		}
-		senderQueue->push(sendMessage); // put char vector in the senderQueue
-		
 	}
 }
 
