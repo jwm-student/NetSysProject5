@@ -3,10 +3,12 @@
 #include <cstring>
 #include <vector>
 #include <bitset>
+#include <chrono>
 
 #include "utils/BlockingQueue.h"
 #include "network/Client.h"
 #include "utils/Message.h"
+#include "network/CollisionAvoidance.h"
 
 /**
 * This is just some example code to show you how to interact 
@@ -23,8 +25,9 @@ int FREQUENCY = 8050;//TODO: Set this to your group frequency!
 // The token you received for your frequency range
 std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
+
 using namespace std;
-void readInput(BlockingQueue< Message >*senderQueue, char addr, Client* client) {
+void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidance* AC, Client* client) {
 	while (true) {
 		string input;
 		cout << "Enter your message: " << endl;
@@ -115,8 +118,29 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr, Client* client) 
 			}
 			else {
 				sendMessage = Message(DATA_SHORT, char_vec);
-			}		
+			}
+		//Deze functie moet recursive zijn. Dan fix je het probleem dat je wel collide bij 3 of meer nodes.
+		//DO not send if busy
+		if(AC->getReceivedMessageType().type == BUSY){
+			while(BUSY){
+				int rn = (rand() % 50);
+				// sleep for random ms
+				// recheck if newType is not BUSY
+				if(!(AC->getReceivedMessageType().type == BUSY)){
+					std::cout<< "slept for " << rn << std::endl;
+					break;
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(rn));
+
+			}
+			//if out of BUSY
+			//try to resend message
+			printf(" uit de while busy loop ");
 			senderQueue->push(sendMessage); // put char vector in the senderQueue
+		} else {
+			printf("stuur dit als je als eerste mag anyway");
+				senderQueue->push(sendMessage); // put char vector in the senderQueue
+		}
 			client->increaseSeqNum();
 		}
 	}
@@ -145,15 +169,17 @@ int main() {
 	}
 
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
-
+	CollisionAvoidance collisionAvoidance;
+	
 	client.startThread();
 
-	thread inputHandler(readInput, &senderQueue, client.getMyAddr(), &client);
+	thread inputHandler(readInput, &senderQueue, client.getMyAddr(), &collisionAvoidance, &client);
 	
 	// Handle messages from the server / audio framework
 	while(true){
 		Message temp = receiverQueue.pop(); // wait for a message to arrive
 		// cout << "Received: " << temp.type << endl; // print received chars
+		collisionAvoidance.setReceivedMessageType(temp.type);
 		switch (temp.type) {
 		case DATA: // We received a data frame!
 			cout << "DATA: ";

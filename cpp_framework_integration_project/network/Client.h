@@ -9,6 +9,7 @@ private:
 	string token;
 	BlockingQueue< Message > *senderQueue;
 	BlockingQueue< Message > *receiverQueue;
+	Message TypeMessage;
 	int seqNum;
 	char myAddr;
 
