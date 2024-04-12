@@ -61,7 +61,7 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidan
 			printf(" uit de while busy loop ");
 			senderQueue->push(sendMessage); // put char vector in the senderQueue
 		} else {
-			printf("stuur dit als je als eerst mag");
+			printf("stuur dit als je als eerste mag anyway");
 			senderQueue->push(sendMessage); // put char vector in the senderQueue
 		}
 	}
