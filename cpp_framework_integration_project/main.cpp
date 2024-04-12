@@ -2,6 +2,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include <bitset>
 
 #include "utils/BlockingQueue.h"
 #include "network/Client.h"
@@ -26,7 +27,24 @@ using namespace std;
 void readInput(BlockingQueue< Message >*senderQueue, char addr) {
 	while (true) {
 		string input;
+		cout << "Enter your message: " << endl;
 		getline(cin, input); //read input from stdin
+
+
+		/// Add header
+		int firstByte = 0;
+		int senderAddress = addr - '0'; // This gives the true integer value (0, 1, 2 or 3)
+
+		// Set first 2 bits to be the source address
+		firstByte = senderAddress << 6; 
+
+		// Set second 2 bits to be destination address
+		int destAddress = 0b11; // TO-DO: implement dynamic destination address
+		firstByte = firstByte | (destAddress << 4);
+
+		bitset<8> checkFirstByte(firstByte);
+		cout << "First byte in binary = " << checkFirstByte << endl;
+
 
 		string finalInput = input + "0000000000000000000000000000000"; // zero padding
 		finalInput.insert(0, 1, addr); // insert addr at front
