@@ -88,7 +88,6 @@ vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, Blocking
 				updatedTable = true;
 			}
 			break;
-		//Cool and epic
 			case DATA:			// This means that it is a topology message
 			// Add table information to own table
 
