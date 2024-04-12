@@ -4,7 +4,7 @@
 src_files := $(shell find -type f -name '*.cpp')
 LDFLAGS		= -lpthread
 
-OBJS = network/Client.cpp network/DataReceiver.cpp main.cpp
+OBJS = network/Client.cpp network/DataReceiver.cpp main.cpp network/CollisionAvoidance.cpp
 
 integration: $(src_files)
 	g++ $(LDFLAGS) $(OBJS) -o integration
@@ -12,5 +12,5 @@ integration: $(src_files)
 clean:
 	rm integration
 
-# g++ -lpthread network/Client.cpp network/DataReceiver.cpp main.cpp -lws2_32 -o integration
+# g++ -lpthread network/CollisionAvoidance.cpp network/Client.cpp network/DataReceiver.cpp  main.cpp -lws2_32 -o integration
 #./integration
