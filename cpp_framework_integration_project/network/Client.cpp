@@ -41,6 +41,27 @@ char Client::getMyAddr(){
 	return myAddr;
 }
 
+void Client::setSeqNum(int seqNum){
+	this->seqNum = seqNum;
+}
+
+void Client::increaseSeqNum(){
+	if(seqNum == 7){
+		seqNum = 0;
+	}
+	else{
+		seqNum++;
+	}
+}
+
+int Client::getSeqNum(){
+	return seqNum;
+}
+
+
+
+
+
 int Client::openSocket() {
 #ifdef _WIN32
 	WSADATA wsaData;

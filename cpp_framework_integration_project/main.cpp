@@ -42,22 +42,35 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr) {
 		int destAddress = 0b11; // TO-DO: implement dynamic destination address
 		firstByte = firstByte | (destAddress << 4);
 
+		// Print out byte
 		bitset<8> checkFirstByte(firstByte);
 		cout << "First byte in binary = " << checkFirstByte << endl;
 
-
-		string finalInput = input + "0000000000000000000000000000000"; // zero padding
-		finalInput.insert(0, 1, addr); // insert addr at front
-
-		vector<char> char_vec(finalInput.begin(), finalInput.end()); // put input in char vector
-		Message sendMessage;
-		if (char_vec.size() > 2) {
-			sendMessage = Message(DATA, char_vec);
+		// After source and destination address there are 4 bits that represent the data offset.
+		// If the length of the message is less than 29 bytes, these are set to 0, and if this is the case, 
+		// nothing needs to be done about the last 4 bits of the first byte
+		if(input.length() > 29){
+			// Do something here
 		}
-		else {
-			sendMessage = Message(DATA_SHORT, char_vec);
-		}		
-		senderQueue->push(sendMessage); // put char vector in the senderQueue
+		else{
+			// The message fits in one data packet
+			input.insert(0, 1, (char)firstByte); // insert addr at front
+
+			vector<char> char_vec(input.begin(), input.end()); // put input in char vector
+			Message sendMessage;
+			if (char_vec.size() > 2) {
+				// Zero 
+				string zeroString = "0000000000000000000000000000"; // Create 0 buffer of 29 zeroes.
+				vector<char> zero_vec(zeroString.begin(),zeroString.end()); // Convert 0 buffer to vector
+				char_vec.insert(char_vec.end(),zero_vec.begin(),zero_vec.end()); // Append 0 vector
+
+				sendMessage = Message(DATA, char_vec);
+			}
+			else {
+				sendMessage = Message(DATA_SHORT, char_vec);
+			}		
+			senderQueue->push(sendMessage); // put char vector in the senderQueue
+		}
 	}
 }
 

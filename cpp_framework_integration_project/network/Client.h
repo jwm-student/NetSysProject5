@@ -9,7 +9,7 @@ private:
 	string token;
 	BlockingQueue< Message > *senderQueue;
 	BlockingQueue< Message > *receiverQueue;
-
+	int seqNum;
 	char myAddr;
 
 	int openSocket();
@@ -22,4 +22,7 @@ public:
 	void setMyAddr(char newAddr);
 	char getMyAddr();
 	void readInput(BlockingQueue< Message >*senderQueue, char addr);
+	int getSeqNum();
+	void setSeqNum(int seqNum);
+	void increaseSeqNum();
 };
