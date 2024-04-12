@@ -1,0 +1,4 @@
+- Schrijf initialisatie
+- Vind locatie voor wating-for-update thread
+- lookupTable formatting verzinnen en uitvoeren
+- Code schrijven voor updated lookupTable sturen nadat er iets nieuws in is gekomen

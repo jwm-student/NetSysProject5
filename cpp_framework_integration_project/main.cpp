@@ -2,6 +2,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include <bitset>
 
 #include "utils/BlockingQueue.h"
 #include "network/Client.h"
@@ -25,8 +26,8 @@ std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 using namespace std;
 void readInput(BlockingQueue< Message >*senderQueue, char addr) {
 	while (true) {
-		string input;
-		getline(cin, input); //read input from stdin
+		string input; 
+		getline(cin, input); //read input from stdin for static address
 
 		string finalInput = input + "0000000000000000000000000000000"; // zero padding
 		finalInput.insert(0, 1, addr); // insert addr at front
@@ -43,6 +44,67 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr) {
 	}
 }
 
+
+vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, BlockingQueue< Message >*receiverQueue, char addr)  {
+	// This function is used to find the initial topology
+	// It outputs the completed initial lookup table
+	
+	// - Broadcast initial discover message, using CSMA/CD
+	Message sendMessage;
+	vector<vector<int>> routingTable;
+
+	int sourceAddress = addr - '0';
+	sourceAddress = sourceAddress << 6;		// Works up untill this point
+	sourceAddress = sourceAddress + 0b00000000000000;
+	
+	// Constructing the initial message
+	string output;
+	output.insert(output.begin(), 1, sourceAddress);
+	vector<char> char_vec(output.begin(), output.end());
+	sendMessage = Message(DATA_SHORT, char_vec);
+	senderQueue->push(sendMessage);
+
+	// Add received discover messages to routingTable
+	bool tableConverged = false;
+	while(tableConverged == false){
+		
+		vector<char> data = temp.data;
+		vector<uint8_t> bytes;
+		unsigned int receivedSourceAddress;
+		bool updatedTable = false;
+
+		Message temp = receiverQueue->pop();
+
+		switch(temp.type) {
+			case DATA_SHORT:	//This means that it is a discovery message
+			// Add neighbour to own tablex
+			for (char c : data) {
+				bytes.push_back(static_cast<unsigned int>(c));
+			}
+			receivedSourceAddress = bytes[0] >> 6;
+			cout << "The received source address is: " << receivedSourceAddress << endl;
+			if (routingTable[receivedSourceAddress][receivedSourceAddress] != 1){
+				routingTable[receivedSourceAddress][receivedSourceAddress] = 1;
+				updatedTable = true;
+			}
+			break;
+
+			case DATA:			// This means that it is a topology message
+			// Add table information to own table
+			
+			break;
+		}
+
+		// If we received an update and this changes our table, send out new table to neighbours
+		if (updatedTable = true){
+		}
+	}
+
+	return routingTable;
+
+}
+
+
 int main() {
 	BlockingQueue< Message > receiverQueue; // Queue messages will arrive in
 	BlockingQueue< Message > senderQueue; // Queue for data to transmit
@@ -55,8 +117,12 @@ int main() {
 
 	client.startThread();
 
+	// Starts DVR initialization process
+	vector<vector<int>> routingTable;
+	routingTable = initializeDVR(&senderQueue, &receiverQueue, client.getMyAddr());
+
 	thread inputHandler(readInput, &senderQueue, client.getMyAddr());
-	
+
 	// Handle messages from the server / audio framework
 	while(true){
 		Message temp = receiverQueue.pop(); // wait for a message to arrive
