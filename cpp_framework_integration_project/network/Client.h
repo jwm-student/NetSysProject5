@@ -9,6 +9,7 @@ private:
 	string token;
 	BlockingQueue< Message > *senderQueue;
 	BlockingQueue< Message > *receiverQueue;
+	Message TypeMessage;
 
 	char myAddr;
 
@@ -21,5 +22,8 @@ public:
 	void listener(int sock);
 	void setMyAddr(char newAddr);
 	char getMyAddr();
-	void readInput(BlockingQueue< Message >*senderQueue, char addr);
+	// void readInput(BlockingQueue< Message >*senderQueue, char addr);
+
+	// Message getReceivedMessageType();
+	// void setReceivedMessageType(Message);
 };
