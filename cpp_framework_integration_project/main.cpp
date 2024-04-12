@@ -6,6 +6,7 @@
 #include "utils/BlockingQueue.h"
 #include "network/Client.h"
 #include "utils/Message.h"
+#include "network/CollisionAvoidance.h"
 
 /**
 * This is just some example code to show you how to interact 
@@ -22,8 +23,12 @@ int FREQUENCY = 8000;//TODO: Set this to your group frequency!
 // The token you received for your frequency range
 std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
+void setReceivedMessageType(Message){
+
+}
+
 using namespace std;
-void readInput(BlockingQueue< Message >*senderQueue, char addr) {
+void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidance* AC) {
 	while (true) {
 		string input;
 		getline(cin, input); //read input from stdin
@@ -33,34 +38,43 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr) {
 
 		vector<char> char_vec(finalInput.begin(), finalInput.end()); // put input in char vector
 		Message sendMessage;
+		// MessageType curMessageType = AC->getReceivedMessageType().type;
+		// std::cout<< "cur Mess Type " << curMessageType << std::endl;
 		if (char_vec.size() > 2) {
 			sendMessage = Message(DATA, char_vec);
 		}
 		else {
 			sendMessage = Message(DATA_SHORT, char_vec);
-		}		
+		}
+		if(AC->getReceivedMessageType().type == BUSY){
+			printf("ik ben busy");
+			break;
+		}
 		senderQueue->push(sendMessage); // put char vector in the senderQueue
+		
 	}
 }
 
 int main() {
 	BlockingQueue< Message > receiverQueue; // Queue messages will arrive in
 	BlockingQueue< Message > senderQueue; // Queue for data to transmit
-
+	printf("set an address integer between 0 - 3 ");
 	string addrInput;
 	getline(cin,addrInput);
 	char my_addr = addrInput.at(0);
 
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
-
+	CollisionAvoidance collisionAvoidance;
+	
 	client.startThread();
 
-	thread inputHandler(readInput, &senderQueue, client.getMyAddr());
+	thread inputHandler(readInput, &senderQueue, client.getMyAddr(), &collisionAvoidance);
 	
 	// Handle messages from the server / audio framework
 	while(true){
 		Message temp = receiverQueue.pop(); // wait for a message to arrive
 		// cout << "Received: " << temp.type << endl; // print received chars
+		collisionAvoidance.setReceivedMessageType(temp.type);
 		switch (temp.type) {
 		case DATA: // We received a data frame!
 			cout << "DATA: ";
