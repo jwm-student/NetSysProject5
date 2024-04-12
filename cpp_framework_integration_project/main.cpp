@@ -47,9 +47,23 @@ int main() {
 	BlockingQueue< Message > receiverQueue; // Queue messages will arrive in
 	BlockingQueue< Message > senderQueue; // Queue for data to transmit
 
+	// Ask for address input. Should be between 0, 1, 2 or 3
+	cout << "Please enter an address for this client (0, 1, 2 or 3)" << endl;
+	bool input_valid = false;
 	string addrInput;
-	getline(cin,addrInput);
-	char my_addr = addrInput.at(0);
+	char my_addr = '4'; // initialized to wrong value so it has to be changed.
+
+	// Loop until valid input
+	while(!input_valid){
+		getline(cin,addrInput);
+		my_addr = addrInput.at(0);
+		if(my_addr == '0' || my_addr == '1' || my_addr == '2' || my_addr == '3'){
+			input_valid = true;
+		}
+		else{
+			cout << "Invalid input, please enter 0, 1, 2 or 3." << addrInput <<endl;
+		}
+	}
 
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
 
