@@ -46,6 +46,7 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidan
 		else {
 			sendMessage = Message(DATA_SHORT, char_vec);
 		}
+		//DO not send if busy
 		if(AC->getReceivedMessageType().type == BUSY){
 			printf("ik ben busy");
 			break;
