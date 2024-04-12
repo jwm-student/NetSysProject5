@@ -31,6 +31,7 @@ Client::Client(string server_addr, char myAddr, int server_port,  int frequency,
 	this->senderQueue = senderQueue;
 	this->receiverQueue = receiverQueue;
 	this->myAddr = myAddr;
+	setSeqNum(0);
 }
 
 void Client::setMyAddr(char newAddr){
@@ -52,6 +53,7 @@ void Client::increaseSeqNum(){
 	else{
 		seqNum++;
 	}
+	std::cout << "Increased SeqNum, it is now: " << getSeqNum() << std::endl;
 }
 
 int Client::getSeqNum(){

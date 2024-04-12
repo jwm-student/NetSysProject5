@@ -19,12 +19,12 @@ std::string SERVER_ADDR = "netsys.ewi.utwente.nl"; //"127.0.0.1"
 // The port to connect to. 8954 for the simulation server
 int SERVER_PORT = 8954;
 // The frequency to connect on.
-int FREQUENCY = 8000;//TODO: Set this to your group frequency!
+int FREQUENCY = 8050;//TODO: Set this to your group frequency!
 // The token you received for your frequency range
 std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
 using namespace std;
-void readInput(BlockingQueue< Message >*senderQueue, char addr) {
+void readInput(BlockingQueue< Message >*senderQueue, char addr, Client* client) {
 	while (true) {
 		string input;
 		cout << "Enter your message: " << endl;
@@ -49,20 +49,67 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr) {
 		// After source and destination address there are 4 bits that represent the data offset.
 		// If the length of the message is less than 29 bytes, these are set to 0, and if this is the case, 
 		// nothing needs to be done about the last 4 bits of the first byte
-		if(input.length() > 29){
-			// Do something here
+		if(input.length() > 30){
+			// Start sending multiple messages
+			int msgLength = input.length();
+			int bytesSent = 0;
+
+			// If the message is too long, the code will break so user will have to send shorter message.
+			if (msgLength > (16*30)){
+				cout << "message too long, please send a shorter message" << endl;
+				continue;
+			}
+			else{
+			// Keep sending until you should have sent all bits
+				while(bytesSent < msgLength){
+					int dataOffset = bytesSent / 30;
+
+					// If there are more than 30 bits to send still, its not the last package.
+					firstByte = firstByte | dataOffset; // Update firstByte with Offset.
+					bitset<8> checkFirstByte(firstByte);
+					cout << "First byte in binary (arbmsg) = " << checkFirstByte << endl;
+
+					int secondByte = 0;
+					if((msgLength-bytesSent) > 30){
+						cout << "still more to send, flag bit set to 1!" << endl;
+						secondByte = 1 << 6; // Sets the flag bit (2nd bit from left) to indicate it is not the last pkt.
+					}
+					secondByte = secondByte | client->getSeqNum();
+					bitset<8> arbMsgSecondByte(secondByte);
+					cout << "Scnd byte in binary (arbmsg) = " << arbMsgSecondByte << endl;
+
+					// Create final pkt
+					vector<char> char_vec;
+					char_vec.push_back(firstByte);
+					char_vec.push_back(secondByte);
+					// Fetch data to be send from input
+					for(int i = 0; i < 30; i++){
+						char_vec.push_back(input[bytesSent+i]);
+					}
+
+					Message sendMessage = Message(DATA, char_vec);
+					senderQueue->push(sendMessage); // put char vector in the senderQueue
+					bytesSent += 30;
+					client->increaseSeqNum();
+				}
+			}
 		}
 		else{
 			// The message fits in one data packet
-			input.insert(0, 1, (char)firstByte); // insert addr at front
+			// Create 2nd Header Byte
+			int secondByte = client->getSeqNum();
+			bitset<8> checkSecondByte(secondByte);
+			cout << "second byte in binary = " << checkSecondByte << endl;
 
+			input.insert(0, 1, (char)firstByte); // insert firstByte at front, with src and dst address and data offset set to 0
+			input.insert(1, 1, (char)secondByte); // insert secondByte as the second byte, with the sequence number.
+			cout << "this is now the input:" << input << endl;
 			vector<char> char_vec(input.begin(), input.end()); // put input in char vector
 			Message sendMessage;
 			if (char_vec.size() > 2) {
 				// Zero 
-				string zeroString = "0000000000000000000000000000"; // Create 0 buffer of 29 zeroes.
-				vector<char> zero_vec(zeroString.begin(),zeroString.end()); // Convert 0 buffer to vector
-				char_vec.insert(char_vec.end(),zero_vec.begin(),zero_vec.end()); // Append 0 vector
+				vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
+				char_vec.insert(char_vec.end(),zeroVector.begin(),zeroVector.end()); // Append 0 vector
 
 				sendMessage = Message(DATA, char_vec);
 			}
@@ -70,6 +117,7 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr) {
 				sendMessage = Message(DATA_SHORT, char_vec);
 			}		
 			senderQueue->push(sendMessage); // put char vector in the senderQueue
+			client->increaseSeqNum();
 		}
 	}
 }
@@ -100,7 +148,7 @@ int main() {
 
 	client.startThread();
 
-	thread inputHandler(readInput, &senderQueue, client.getMyAddr());
+	thread inputHandler(readInput, &senderQueue, client.getMyAddr(), &client);
 	
 	// Handle messages from the server / audio framework
 	while(true){
