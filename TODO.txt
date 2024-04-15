@@ -1,3 +1,15 @@
-- lookupTable formatting verzinnen en uitvoeren, dit is met twee bytes voor rows en cols!
-    - in Table[i][j]: dest = i, via = j
-- Vind locatie voor wating-for-update thread
+- CHECK VOOR ROUTING BIT TOEVOEGEN, anders triggert de functie op elke incoming package
+- ROUTING BIT OOK AANZETTEN BIJ VERSTUURDE BERICHTEN
+- DVR functie schoonmaken, algemeen handig functies apart zetten
+- waiting for update thread maken
+    - als een incoming bericht de routing flag aan heeft staan, actie ondernemen
+    - Functie voor het handlen van korte discovery en lange routingtable berichten
+- Timeout functie:
+    - Hou timers voor andere routers bij
+        - Als een timer afloopt:
+            - Verwijder router
+            - Update routing Table              }
+            - stuur geupdate table naar buren   } deze kunnen in een functie die initializeDVR ook gebruikt
+    - Hou timer voor jezelf bij
+        - Als timer afloopt:
+            - stuur keepalive bericht

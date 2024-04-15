@@ -45,6 +45,94 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr) {
 	}
 }
 
+void sendUpdatedTable(vector<vector<int>> routingTable){
+	vector<char> sendingTable;
+	// Add information about table size
+	sendingTable[0] = routingTable.size();
+	sendingTable[1] = routingTable[0].size();
+	// Add table data
+	for (int i = 0; i < routingTable.size(); i++){
+		for (int j = 0; j < routingTable[0].size(); i++){
+			sendingTable[i * routingTable[0].size() + j] = routingTable[i][j];
+		}
+	}
+
+	// THIS DOES NOT YET ADD HEADERS OR ZERO PADDING, HAND OVER TO PACKAGING FUNCTION TO FIX
+	Message sendMessage;
+	sendMessage = Message(DATA, sendingTable);
+}
+
+void routingMessageHandler(Message temp, vector<vector<int>>& routingTable){
+	vector<char> data = temp.data;
+	vector<uint8_t> bytes;
+	vector<uint8_t> receivedTableData;
+	vector<vector<uint8_t>> receivedTable;
+	unsigned int receivedSourceAddress;
+	int dataLength = 0;
+	int tableDests = 0;
+	int tableVias = 0;
+	bool updatedTable = false;
+
+	switch(temp.type) {
+		case DATA_SHORT:	//This means that it is a discovery message
+		// Add neighbour to own tablex
+		for (char c : data) {
+			bytes.push_back(static_cast<unsigned int>(c));
+		}
+		receivedSourceAddress = bytes[0] >> 6;
+		cout << "The received source address is: " << receivedSourceAddress << endl;
+		if (routingTable[receivedSourceAddress][receivedSourceAddress] != 1){
+			routingTable[receivedSourceAddress][receivedSourceAddress] = 1;
+			updatedTable = true;
+		}
+		break;
+		case DATA:			// This means that it is a topology message
+		// Import and process incoming table
+		for (char c : data) {
+			if (c != '\0'){
+				dataLength++;	// Finds the amount of data in the packet
+			}
+			bytes.push_back(static_cast<unsigned int>(c));	
+		}
+		receivedSourceAddress = bytes[0] >> 6;
+		// Find table dimensions
+		tableDests = bytes[2];
+		tableVias = bytes[3];
+
+		// Remove header from data
+		for (int i = 4; i < dataLength; i++){
+			receivedTableData[i-4] = bytes[i];
+		}
+		
+		// Sort data into 2D table TODO: CHECK IF ORDER IS CORRECT
+		for (int i = 0; i < tableDests; i++){
+			for (int j = 0; j < tableVias; j++){
+				receivedTable[i][j] = receivedTableData[i * tableVias + j];
+			}
+		}
+
+		// For a given destination, loop through all entries in the received table,
+		// add 1 and see if it's lower than the current cost of destination over the
+		// the source address's hop.
+		for (int i = 0; i < tableDests; i++){
+			for (int j = 0; j < tableVias; j++){
+				if ((receivedTable[i][j] + 1) < routingTable[i][receivedSourceAddress]){
+					routingTable[i][receivedSourceAddress] = (receivedTable[i][j] + 1);
+					updatedTable = true;
+				}
+			}
+		}
+		break;
+	}
+	
+	if (updatedTable == true){
+		sendUpdatedTable(routingTable);
+		updatedTable = false;
+	}
+	// TODO:
+	// - Routing table update functies apart maken
+	// - Routing table verzend functie apart maken
+}
 
 vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, BlockingQueue< Message >*receiverQueue, char addr)  {
 	// This function is used to find the initial topology
@@ -71,91 +159,11 @@ vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, Blocking
 		
 		chrono::milliseconds timeout(5000);
 
-		vector<uint8_t> bytes;
-		vector<uint8_t> receivedTableData;
-		vector<vector<uint8_t>> receivedTable;
-		unsigned int receivedSourceAddress;
-		int dataLength = 0;
-		int tableDests = 0;
-		int tableVias = 0;
-		bool updatedTable = false;
-
-
 		Message temp = receiverQueue->pop();
-		vector<char> data = temp.data;
 
-		switch(temp.type) {
-			case DATA_SHORT:	//This means that it is a discovery message
-			// Add neighbour to own tablex
-			for (char c : data) {
-				bytes.push_back(static_cast<unsigned int>(c));
-			}
-			receivedSourceAddress = bytes[0] >> 6;
-			cout << "The received source address is: " << receivedSourceAddress << endl;
-			if (routingTable[receivedSourceAddress][receivedSourceAddress] != 1){
-				routingTable[receivedSourceAddress][receivedSourceAddress] = 1;
-				updatedTable = true;
-			}
-			break;
-			case DATA:			// This means that it is a topology message
-			// Import and process incoming table
-			for (char c : data) {
-				if (c != '\0'){
-					dataLength++;	// Finds the amount of data in the packet
-				}
-				bytes.push_back(static_cast<unsigned int>(c));	
-			}
-			receivedSourceAddress = bytes[0] >> 6;
-			// Find table dimensions
-			tableDests = bytes[2];
-			tableVias = bytes[3];
+		routingMessageHandler(temp, routingTable);
 
-			// Remove header from data
-			for (int i = 4; i < dataLength; i++){
-				receivedTableData[i-4] = bytes[i];
-			}
-			
-			// Sort data into 2D table TODO: CHECK IF ORDER IS CORRECT
-			for (int i = 0; i < tableDests; i++){
-				for (int j = 0; j < tableVias; j++){
-					receivedTable[i][j] = receivedTableData[i * tableVias + j];
-				}
-			}
-
-			// For a given destination, loop through all entries in the received table,
-			// add 1 and see if it's lower than the current cost of destination over the
-			// the source address's hop.
-			for (int i = 0; i < tableDests; i++){
-				for (int j = 0; j < tableVias; j++){
-					if ((receivedTable[i][j] + 1) < routingTable[i][receivedSourceAddress]){
-						routingTable[i][receivedSourceAddress] = (receivedTable[i][j] + 1);
-						updatedTable = true;
-					}
-				}
-			}
-			break;
-		}
-
-		// If we received an update and this changes our table, send out new table to neighbours
-		if (updatedTable == true){
-			vector<char> sendingTable;
-			// Add information about table size
-			sendingTable[0] = routingTable.size();
-			sendingTable[1] = routingTable[0].size();
-			// Add table data
-			for (int i = 0; i < routingTable.size(); i++){
-				for (int j = 0; j < routingTable[0].size(); i++){
-					sendingTable[i * routingTable[0].size() + j] = routingTable[i][j];
-				}
-			}
-
-			// THIS DOES NOT YET ADD HEADERS OR ZERO PADDING, HAND OVER TO PACKAGING FUNCTION TO FIX
-			sendMessage = Message(DATA, sendingTable);
-
-			updatedTable = false;
-		}
-
-		// While now new packet in queue, update timer,
+		// While no new packet in queue, update timer,
 		// if timer is higher than treshhold
 		chrono::steady_clock::time_point start = chrono::steady_clock::now();
 
@@ -167,10 +175,12 @@ vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, Blocking
 		}
 
 	}
-
+	
 	return routingTable;
-
 }
+
+
+
 
 
 int main() {
@@ -190,6 +200,7 @@ int main() {
 	routingTable = initializeDVR(&senderQueue, &receiverQueue, client.getMyAddr());
 
 	thread inputHandler(readInput, &senderQueue, client.getMyAddr());
+
 
 	// Handle messages from the server / audio framework
 	while(true){
