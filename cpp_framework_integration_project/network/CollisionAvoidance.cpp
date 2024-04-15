@@ -23,3 +23,10 @@ void CollisionAvoidance::setReceivedMessageType(Message newMessageType){
 	typeMessage = newMessageType;
 	// printf("ik ben lekker aan het setten");
 }
+bool CollisionAvoidance::queueIsBusy(MessageType RM){
+    while(getReceivedMessageType().type == BUSY || getReceivedMessageType().type == SENDING || getReceivedMessageType().type == DATA){
+        int rn = (rand() % 50);
+        std::this_thread::sleep_for(std::chrono::milliseconds(rn));
+    }
+    return false;
+}
