@@ -1,3 +1,5 @@
+#ifndef CLIENT_HPP
+#define CLIENT_HPP
 #include "../utils/Message.h"
 
 class Client {
@@ -11,6 +13,7 @@ private:
 	BlockingQueue< Message > *receiverQueue;
 	Message TypeMessage;
 	int seqNum;
+	int expSeqNum;
 	char myAddr;
 
 	int openSocket();
@@ -26,4 +29,9 @@ public:
 	int getSeqNum();
 	void setSeqNum(int seqNum);
 	void increaseSeqNum();
+	int getExpSeqNum();
+	void setExpSeqNum(int expSeqNum);
+	void increaseExpSeqNum();
 };
+
+#endif

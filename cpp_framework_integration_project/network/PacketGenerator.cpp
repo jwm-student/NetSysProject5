@@ -1,3 +1,18 @@
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <bitset>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+//#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#pragma comment(lib, "Ws2_32.lib")
+#elif __linux__
+#include <sys/socket.h>    	//socket
+#include <arpa/inet.h> 		//inet_addr
+#endif
+
 #include "PacketGenerator.hpp"
 
 PacketGenerator::PacketGenerator(){}
@@ -25,7 +40,32 @@ vector<Message> PacketGenerator::generatePackets(std::string input, Client* clie
 
 vector<Message> PacketGenerator::generateAckPacket(int seqNum, Client* client, int destAddr){
     vector<Message> output;
-    return output;
+
+    // Set first 2 bits to be the source address
+	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	int firstByte = senderAddress << 6; 
+    bitset<8> sendAddr(senderAddress);
+    std::cout << "Sender address in bits: " << sendAddr << std::endl;
+	// Set second 2 bits to be destination address
+	firstByte = firstByte | (destAddr << 4);
+    bitset<8> ackSent(firstByte);
+    std::cout << "destAddr: " << destAddr << std::endl;
+    std::cout << "First bit of ACK sent: " << ackSent << std::endl;
+
+    // Create second byte
+    int secondByte = seqNum;
+
+    //TODO: Impelement next hop when relevant!
+    vector<char> char_vec; // put input in char vector
+    char_vec.push_back(firstByte);
+    char_vec.push_back(secondByte);
+
+    Message sendMessage;
+    sendMessage = Message(DATA_SHORT, char_vec);
+    output.push_back(sendMessage);
+
+    client->increaseExpSeqNum();
+	return output;
 }
 
 vector<Message> PacketGenerator::generateMultiPacket(std::string input, Client* client){

@@ -32,6 +32,7 @@ Client::Client(string server_addr, char myAddr, int server_port,  int frequency,
 	this->receiverQueue = receiverQueue;
 	this->myAddr = myAddr;
 	setSeqNum(0);
+	setExpSeqNum(0);
 }
 
 void Client::setMyAddr(char newAddr){
@@ -60,9 +61,23 @@ int Client::getSeqNum(){
 	return seqNum;
 }
 
+void Client::setExpSeqNum(int expSeqNum){
+	this->expSeqNum = expSeqNum;
+}
 
+void Client::increaseExpSeqNum(){
+	if(expSeqNum == 7){
+		expSeqNum = 0;
+	}
+	else{
+		expSeqNum++;
+	}
+	std::cout << "Increased ExpSeqNum, it is now: " << getExpSeqNum() << std::endl;
+}
 
-
+int Client::getExpSeqNum(){
+	return expSeqNum;
+}
 
 int Client::openSocket() {
 #ifdef _WIN32
