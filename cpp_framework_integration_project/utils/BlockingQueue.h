@@ -41,6 +41,10 @@ public:
 		cond.notify_one();
 	}
 
+	bool isempty() {
+		return theQueue.empty();
+	}
+
 };
 
 #endif

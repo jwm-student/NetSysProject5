@@ -1,4 +1,3 @@
-- Schrijf initialisatie
+- lookupTable formatting verzinnen en uitvoeren, dit is met twee bytes voor rows en cols!
+    - in Table[i][j]: dest = i, via = j
 - Vind locatie voor wating-for-update thread
-- lookupTable formatting verzinnen en uitvoeren
-- Code schrijven voor updated lookupTable sturen nadat er iets nieuws in is gekomen

@@ -3,6 +3,7 @@
 #include <cstring>
 #include <vector>
 #include <bitset>
+#include <chrono>
 
 #include "utils/BlockingQueue.h"
 #include "network/Client.h"
@@ -54,7 +55,7 @@ vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, Blocking
 	vector<vector<int>> routingTable;
 
 	int sourceAddress = addr - '0';
-	sourceAddress = sourceAddress << 6;		// Works up untill this point
+	sourceAddress = sourceAddress << 6;
 	sourceAddress = sourceAddress + 0b00000000000000;
 	
 	// Constructing the initial message
@@ -68,12 +69,20 @@ vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, Blocking
 	bool tableConverged = false;
 	while(tableConverged == false){
 		
-		vector<char> data = temp.data;
+		chrono::milliseconds timeout(5000);
+
 		vector<uint8_t> bytes;
+		vector<uint8_t> receivedTableData;
+		vector<vector<uint8_t>> receivedTable;
 		unsigned int receivedSourceAddress;
+		int dataLength = 0;
+		int tableDests = 0;
+		int tableVias = 0;
 		bool updatedTable = false;
 
+
 		Message temp = receiverQueue->pop();
+		vector<char> data = temp.data;
 
 		switch(temp.type) {
 			case DATA_SHORT:	//This means that it is a discovery message
@@ -89,14 +98,74 @@ vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, Blocking
 			}
 			break;
 			case DATA:			// This means that it is a topology message
-			// Add table information to own table
+			// Import and process incoming table
+			for (char c : data) {
+				if (c != '\0'){
+					dataLength++;	// Finds the amount of data in the packet
+				}
+				bytes.push_back(static_cast<unsigned int>(c));	
+			}
+			receivedSourceAddress = bytes[0] >> 6;
+			// Find table dimensions
+			tableDests = bytes[2];
+			tableVias = bytes[3];
 
+			// Remove header from data
+			for (int i = 4; i < dataLength; i++){
+				receivedTableData[i-4] = bytes[i];
+			}
+			
+			// Sort data into 2D table TODO: CHECK IF ORDER IS CORRECT
+			for (int i = 0; i < tableDests; i++){
+				for (int j = 0; j < tableVias; j++){
+					receivedTable[i][j] = receivedTableData[i * tableVias + j];
+				}
+			}
+
+			// For a given destination, loop through all entries in the received table,
+			// add 1 and see if it's lower than the current cost of destination over the
+			// the source address's hop.
+			for (int i = 0; i < tableDests; i++){
+				for (int j = 0; j < tableVias; j++){
+					if ((receivedTable[i][j] + 1) < routingTable[i][receivedSourceAddress]){
+						routingTable[i][receivedSourceAddress] = (receivedTable[i][j] + 1);
+						updatedTable = true;
+					}
+				}
+			}
 			break;
 		}
 
 		// If we received an update and this changes our table, send out new table to neighbours
-		if (updatedTable = true){
+		if (updatedTable == true){
+			vector<char> sendingTable;
+			// Add information about table size
+			sendingTable[0] = routingTable.size();
+			sendingTable[1] = routingTable[0].size();
+			// Add table data
+			for (int i = 0; i < routingTable.size(); i++){
+				for (int j = 0; j < routingTable[0].size(); i++){
+					sendingTable[i * routingTable[0].size() + j] = routingTable[i][j];
+				}
+			}
+
+			// THIS DOES NOT YET ADD HEADERS OR ZERO PADDING, HAND OVER TO PACKAGING FUNCTION TO FIX
+			sendMessage = Message(DATA, sendingTable);
+
+			updatedTable = false;
 		}
+
+		// While now new packet in queue, update timer,
+		// if timer is higher than treshhold
+		chrono::steady_clock::time_point start = chrono::steady_clock::now();
+
+		while (receiverQueue->isempty() == true){
+			if (chrono::steady_clock::now() - start >= timeout){
+				tableConverged = true;
+				break;
+			}
+		}
+
 	}
 
 	return routingTable;
