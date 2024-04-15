@@ -42,27 +42,30 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidan
 		else {
 			sendMessage = Message(DATA_SHORT, char_vec);
 		}
-		//Deze functie moet recursive zijn. Dan fix je het probleem dat je wel collide bij 3 of meer nodes.
-		//DO not send if busy
-		if(AC->getReceivedMessageType().type == BUSY){
-			while(BUSY){
-				int rn = (rand() % 50);
-				// sleep for random ms
-				// recheck if newType is not BUSY
-				if(!(AC->getReceivedMessageType().type == BUSY)){
-					std::cout<< "slept for " << rn << std::endl;
-					break;
-				}
-				std::this_thread::sleep_for(std::chrono::milliseconds(rn));
 
+		//Output Joep: 
+		vector<Message> senderMessageVector;
+		senderMessageVector.push_back(sendMessage);
+
+		while(senderMessageVector.size()>0){
+			std::cout<< " grootte senderQueue " << senderMessageVector.size() << std::endl;
+			//assign first added Message to be send.
+			Message sendThisMessage = senderMessageVector.front();
+			//pop the same message out of senderMessageVector.
+			
+			//Je mag deze wel erasen, maar zorg ervoor dat hij eerst in een 
+			//andere vector<Message> opgeslagen wordt. Zodat pas bij een ACK hij daadwerkelijk loesoe is.
+			//EN tot die tijd evt. opnieuw gestuurd kan worden bij geen ACK.
+			senderMessageVector.erase(senderMessageVector.begin());
+
+			//do the checks
+			if((AC->queueIsBusy(AC->getReceivedMessageType().type)) == false){
+				printf("ik was busy en kan nu sturen");
+				senderQueue->push(sendThisMessage);
+			} else {
+				printf("ik kan sws senden!");
+				senderQueue->push(sendThisMessage);
 			}
-			//if out of BUSY
-			//try to resend message
-			printf(" uit de while busy loop ");
-			senderQueue->push(sendMessage); // put char vector in the senderQueue
-		} else {
-			printf("stuur dit als je als eerste mag anyway");
-			senderQueue->push(sendMessage); // put char vector in the senderQueue
 		}
 	}
 }

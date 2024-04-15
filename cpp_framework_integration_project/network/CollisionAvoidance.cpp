@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <chrono>
+#include <thread>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -22,4 +24,13 @@ Message CollisionAvoidance::getReceivedMessageType(){
 void CollisionAvoidance::setReceivedMessageType(Message newMessageType){
 	typeMessage = newMessageType;
 	// printf("ik ben lekker aan het setten");
+}
+
+bool CollisionAvoidance::queueIsBusy(MessageType RM){
+	while(getReceivedMessageType().type == BUSY){
+		int rn = (rand() % 50);
+		std::this_thread::sleep_for(std::chrono::milliseconds(rn));
+	}
+	printf("type is not BUSY any longer. ");
+	return false;
 }
