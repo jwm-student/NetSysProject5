@@ -29,21 +29,17 @@ std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 using namespace std;
 vector<Message> packetGenerator(string input, Client* client){
 	vector<Message> output;
+	// Vector for padding
+	vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
 
 	/// Add header
-	int firstByte = 0;
 	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
-
 	// Set first 2 bits to be the source address
-	firstByte = senderAddress << 6; 
+	int firstByte = senderAddress << 6; 
 
 	// Set second 2 bits to be destination address
 	int destAddress = 0b11; // TO-DO: implement dynamic destination address
 	firstByte = firstByte | (destAddress << 4);
-
-	// Print out byte
-	bitset<8> checkFirstByte(firstByte);
-	cout << "First byte in binary = " << checkFirstByte << endl;
 
 	// After source and destination address there are 4 bits that represent the data offset.
 	// If the length of the message is less than 30 bytes, these are set to 0, and if this is the case, 
@@ -52,65 +48,47 @@ vector<Message> packetGenerator(string input, Client* client){
 		// Start sending multiple messages
 		int msgLength = input.length();
 		int bytesSent = 0;
-
-		// If the message is too long, the code will break so user will have to send shorter message.
-		// TO-DO: check this before calling this function!
-		if (msgLength > (16*30)){
-			cout << "message too long, please send a shorter message" << endl;
-			return output;
-		}
-		else{
 		// Keep sending until you should have sent all bits
-			while(bytesSent < msgLength){
-				int dataOffset = bytesSent / 30;
+		while(bytesSent < msgLength){
+			int dataOffset = bytesSent / 30;
+			firstByte = firstByte | dataOffset; // Update firstByte with Offset.
 
-				// If there are more than 30 bits to send still, its not the last package.
-				firstByte = firstByte | dataOffset; // Update firstByte with Offset.
-				bitset<8> checkFirstByte(firstByte);
-				cout << "First byte in binary (arbmsg) = " << checkFirstByte << endl;
-
-				int secondByte = 0;
-				if((msgLength-bytesSent) > 30){
-					cout << "still more to send, flag bit set to 1!" << endl;
-					secondByte = 1 << 6; // Sets the flag bit (2nd bit from left) to indicate it is not the last pkt.
-				}
-				secondByte = secondByte | client->getSeqNum();
-				bitset<8> arbMsgSecondByte(secondByte);
-				cout << "Scnd byte in binary (arbmsg) = " << arbMsgSecondByte << endl;
-
-				// Create final pkt
-				vector<char> char_vec;
-				char_vec.push_back(firstByte);
-				char_vec.push_back(secondByte);
-				// Fetch data to be send from input
-				for(int i = 0; i < 30; i++){
-					char_vec.push_back(input[bytesSent+i]);
-				}
-
-				Message sendMessage = Message(DATA, char_vec);
-				output.push_back(sendMessage);
-				bytesSent += 30;
-				client->increaseSeqNum();
+			int secondByte = 0;
+			// If there are more than 30 bits to send still, its not the last package.
+			if((msgLength-bytesSent) > 30){
+				secondByte = 1 << 6; // Sets the flag bit (2nd bit from left) to indicate it is not the last pkt.
+				input.insert(input.end(),zeroVector.begin(),zeroVector.end()); // Append 0 vector
 			}
+			secondByte = secondByte | client->getSeqNum();
+
+			// Create final pkt
+			vector<char> char_vec;
+			char_vec.push_back(firstByte);
+			char_vec.push_back(secondByte);
+			// Fetch data to be send from input
+			for(int i = 0; i < 30; i++){
+				char_vec.push_back(input[bytesSent+i]);
+			}
+
+			Message sendMessage = Message(DATA, char_vec);
+			output.push_back(sendMessage);
+			bytesSent += 30;
+			client->increaseSeqNum();
 		}
 	}
 	else{
 		// The message fits in one data packet
 		// Create 2nd Header Byte
 		int secondByte = client->getSeqNum();
-		bitset<8> checkSecondByte(secondByte);
-		cout << "second byte in binary = " << checkSecondByte << endl;
 
 		input.insert(0, 1, (char)firstByte); // insert firstByte at front, with src and dst address and data offset set to 0
 		input.insert(1, 1, (char)secondByte); // insert secondByte as the second byte, with the sequence number.
-		cout << "this is now the input:" << input << endl;
+
 		vector<char> char_vec(input.begin(), input.end()); // put input in char vector
 		Message sendMessage;
 		if (char_vec.size() > 2) {
-			// Zero 
-			vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
+			// TO-DO: See if just a for loop pushing back each char of the input works better
 			char_vec.insert(char_vec.end(),zeroVector.begin(),zeroVector.end()); // Append 0 vector
-
 			sendMessage = Message(DATA, char_vec);
 			output.push_back(sendMessage);
 		}
@@ -128,9 +106,14 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidan
 		string input;
 		cout << "Enter your message: " << endl;
 		getline(cin, input); //read input from stdin
-		vector<Message> packets = packetGenerator(input, client);
-		for(auto i : packets){
-			senderQueue->push(i);
+		if(input.size() < 16*30){
+			vector<Message> packets = packetGenerator(input, client);
+			for(auto i : packets){
+				senderQueue->push(i);
+			}
+		}
+		else{
+			cout << "Message too long, please write a shorter message!" << endl;
 		}
 	}
 }
