@@ -46,6 +46,11 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr) {
 }
 
 void sendUpdatedTable(vector<vector<int>> routingTable){
+	// This function can be called when a local routingtable has been updated
+	// It sends the table to all neighbours, so that they can update theirs
+	// It counts the width and height of the table, adds this to the first two bytes of data
+	// Then it adds the table contents after that and sends the message over to the header constructor
+
 	vector<char> sendingTable;
 	// Add information about table size
 	sendingTable[0] = routingTable.size();
@@ -63,6 +68,10 @@ void sendUpdatedTable(vector<vector<int>> routingTable){
 }
 
 void routingMessageHandler(Message temp, vector<vector<int>>& routingTable){
+	// Input: routing message, local routing table
+	// Takes a message that has been flagged as "routing" and processes it
+	// It checks if the local routingtable has to be updated, and calls the 
+	// sendUpdatedTable function if true.
 	vector<char> data = temp.data;
 	vector<uint8_t> bytes;
 	vector<uint8_t> receivedTableData;
