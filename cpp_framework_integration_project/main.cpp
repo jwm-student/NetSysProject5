@@ -161,7 +161,7 @@ vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, Blocking
 	output.insert(output.begin(), 1, sourceAddress);
 	vector<char> char_vec(output.begin(), output.end());
 	sendMessage = Message(DATA_SHORT, char_vec);
-	senderQueue->push(sendMessage);
+	senderQueue->push(sendMessage); // HAVE TO ADD THE HEADER AND SENDING FUNCTION HERE, ADD ROUTING FLAG AS WELL
 
 	// Add received discover messages to routingTable
 	bool tableConverged = false;
