@@ -22,7 +22,7 @@ std::string SERVER_ADDR = "netsys.ewi.utwente.nl"; //"127.0.0.1"
 // The port to connect to. 8954 for the simulation server
 int SERVER_PORT = 8954;
 // The frequency to connect on.
-int FREQUENCY = 8050;//TODO: Set this to your group frequency!
+int FREQUENCY = 8090;//TODO: Set this to your group frequency!
 // The token you received for your frequency range
 std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
@@ -35,7 +35,7 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidan
 		cout << "Enter your message: " << endl;
 		getline(cin, input); //read input from stdin
 		if(input.size() < 16*30){
-			vector<Message> packets = packetGenerator(input, client);
+			vector<Message> packets = packetGenerator->generatePackets(input, client);
 			while(packets.size()>0){
             	//assign first added Message to be send.
             	Message sendThisMessage = packets.front();
@@ -182,7 +182,7 @@ vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, Blocking
 	bool tableConverged = false;
 	while(tableConverged == false){
 		
-		chrono::milliseconds timeout(5000);
+		chrono::milliseconds timeout(10000);
 
 		Message temp = receiverQueue->pop();
 		routingMessageHandler(temp, routingTable);
