@@ -13,7 +13,7 @@
 /**
 * This is just some example code to show you how to interact 
 * with the server using the provided client and two queues.
-* Feel free to modify this code in any way you like!
+* Feel free to modify this code in any way you like! l
 */
 
 // The address to connect to. Set this to localhost to use the audio interface tool.
@@ -29,7 +29,7 @@ using namespace std;
 void readInput(BlockingQueue< Message >*senderQueue, char addr) {
 	while (true) {
 		string input; 
-		getline(cin, input); //read input from stdin for static address
+		getline(cin, input); //read input from stdin
 
 		string finalInput = input + "0000000000000000000000000000000"; // zero padding
 		finalInput.insert(0, 1, addr); // insert addr at front
