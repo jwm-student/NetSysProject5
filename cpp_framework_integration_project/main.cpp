@@ -30,7 +30,7 @@ std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 using namespace std;
 
 void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidance* AC, Client* client, PacketGenerator* packetGenerator) {
-	while (true) {
+while (true) {
 		string input;
 		cout << "Enter your message: " << endl;
 		getline(cin, input); //read input from stdin
@@ -61,7 +61,7 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidan
 		}
 	}
 }
-void sendUpdatedTable(vector<vector<int>> routingTable){
+void sendUpdatedTable(vector<vector<int>> routingTable, PacketGenerator* PacketGenerator, Client* client){
 	// This function can be called when a local routingtable has been updated
 	// It sends the table to all neighbours, so that they can update theirs
 	// It counts the width and height of the table, adds this to the first two bytes of data
@@ -77,13 +77,14 @@ void sendUpdatedTable(vector<vector<int>> routingTable){
 			sendingTable[i * routingTable[0].size() + j] = routingTable[i][j];
 		}
 	}
-
-	// THIS DOES NOT YET ADD HEADERS OR ZERO PADDING, HAND OVER TO PACKAGING FUNCTION TO FIX
+	
+	vector<Message> routingVector = PacketGenerator->generateRoutingPacket(sendingTable,client);
 	Message sendMessage;
-	sendMessage = Message(DATA, sendingTable);
+	sendMessage = routingVector[0];
+	
 }
 
-void routingMessageHandler(Message temp, vector<vector<int>>& routingTable){
+void routingMessageHandler(Message temp, vector<vector<int>>& routingTable, PacketGenerator* packetGenerator, Client* client){
 	// Input: routing message, local routing table
 	// Takes a message that has been flagged as "routing" and processes it
 	// It checks if the local routingtable has to be updated, and calls the 
@@ -151,7 +152,7 @@ void routingMessageHandler(Message temp, vector<vector<int>>& routingTable){
 	}
 	
 	if (updatedTable == true){
-		sendUpdatedTable(routingTable);
+		sendUpdatedTable(routingTable,packetGenerator,client);
 		updatedTable = false;
 	}
 	// TODO:
@@ -159,7 +160,7 @@ void routingMessageHandler(Message temp, vector<vector<int>>& routingTable){
 	// - Routing table verzend functie apart maken
 }
 
-vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, BlockingQueue< Message >*receiverQueue, char addr)  {
+vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, BlockingQueue< Message >*receiverQueue, char addr, Client* client, PacketGenerator* packetGenerator)  {
 	// This function is used to find the initial topology
 	// It outputs the completed initial lookup table
 	
@@ -167,15 +168,9 @@ vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, Blocking
 	Message sendMessage;
 	vector<vector<int>> routingTable;
 
-	int sourceAddress = addr - '0';
-	sourceAddress = sourceAddress << 6;
-	sourceAddress = sourceAddress + 0b00000000000000;
-	
-	// Constructing the initial message
-	string output;
-	output.insert(output.begin(), 1, sourceAddress);
-	vector<char> char_vec(output.begin(), output.end());
-	sendMessage = Message(DATA_SHORT, char_vec);
+	vector<Message> pingVector = packetGenerator->generatePingPacket(client);
+
+	sendMessage = pingVector[0];
 	senderQueue->push(sendMessage); // HAVE TO ADD THE HEADER AND SENDING FUNCTION HERE, ADD ROUTING FLAG AS WELL
 
 	// Add received discover messages to routingTable
@@ -185,7 +180,7 @@ vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, Blocking
 		chrono::milliseconds timeout(10000);
 
 		Message temp = receiverQueue->pop();
-		routingMessageHandler(temp, routingTable);
+		routingMessageHandler(temp, routingTable, packetGenerator, client);
 
 		// While no new packet in queue, update timer,
 		// if timer is higher than treshhold
@@ -231,7 +226,7 @@ int main() {
 
 	// Starts DVR initialization process
 	vector<vector<int>> routingTable;
-	routingTable = initializeDVR(&senderQueue, &receiverQueue, client.getMyAddr());
+	routingTable = initializeDVR(&senderQueue, &receiverQueue, client.getMyAddr(),&client,&packetGenerator);
 
 
 	thread inputHandler(readInput, &senderQueue, client.getMyAddr(), &collisionAvoidance, &client, &packetGenerator);

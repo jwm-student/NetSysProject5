@@ -20,4 +20,6 @@ class PacketGenerator {
         vector<Message> generateAckPacket(int seqNum, Client* client, int destAddr);
         vector<Message> generateMultiPacket(std::string input, Client* client);
         vector<Message> generateSingleDataPacket(std::string input, Client* client);
+        vector<Message> generatePingPacket(Client* client);
+        vector<Message> generateRoutingPacket(vector<char> sendingTable, Client* client);
 };
