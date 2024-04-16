@@ -5,3 +5,9 @@
         "thread": "cpp"
     }
 }
+{
+    "files.associations": {
+        "xstring": "cpp",
+        "vector": "cpp"
+    }
+}

@@ -1,0 +1,17 @@
+- CHECK VOOR ROUTING BIT TOEVOEGEN, anders triggert de functie op elke incoming package
+- ROUTING BIT OOK AANZETTEN BIJ VERSTUURDE BERICHTEN
+
+- waiting for update thread maken
+    - als een incoming bericht de routing flag aan heeft staan, actie ondernemen
+    - Functie voor het handlen van korte discovery en lange routingtable berichten
+
+- Timeout functie:
+    - Voeg nieuwe timers toe zodra we van een nieuwe node zien
+    - Hou timers voor andere routers bij (VOEG updateTimers() TOE AAN LAAGSTE NIVEAU WAAR PACKETS BINNEN KOMEN)
+        - Als een timer afloopt:
+            - Verwijder router
+            - Update routing Table              }
+            - stuur geupdate table naar buren   } deze kunnen in een functie die initializeDVR ook gebruikt
+    - Hou timer voor jezelf bij
+        - Als timer afloopt:
+            - stuur keepalive bericht
