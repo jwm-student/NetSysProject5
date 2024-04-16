@@ -68,6 +68,14 @@ void sendUpdatedTable(vector<vector<int>> routingTable, PacketGenerator* PacketG
 	// Then it adds the table contents after that and sends the message over to the header constructor
 
 	vector<char> sendingTable;
+
+	cout << "sending the following table: " << endl;
+	for (const auto& row : routingTable) {
+        for (const auto& elem : row) {
+            std::cout << elem << ' ';
+        }
+        std::cout << std::endl; // Newline for each row
+    }
 	// Add information about table size
 	sendingTable[0] = routingTable.size();
 	sendingTable[1] = routingTable[0].size();
@@ -81,7 +89,7 @@ void sendUpdatedTable(vector<vector<int>> routingTable, PacketGenerator* PacketG
 	vector<Message> routingVector = PacketGenerator->generateRoutingPacket(sendingTable,client);
 	Message sendMessage;
 	sendMessage = routingVector[0];
-	
+	// THIS MESSAGE IS NOT YET SENT
 }
 
 void routingMessageHandler(Message temp, vector<vector<int>>& routingTable, PacketGenerator* packetGenerator, Client* client){
@@ -110,6 +118,7 @@ void routingMessageHandler(Message temp, vector<vector<int>>& routingTable, Pack
 		if (routingTable[receivedSourceAddress][receivedSourceAddress] != 1){
 			routingTable[receivedSourceAddress][receivedSourceAddress] = 1;
 			updatedTable = true;
+			cout << "Updated the routing table to " << routingTable[receivedSourceAddress][receivedSourceAddress] << endl;
 		}
 		break;
 		case DATA:			// This means that it is a topology message
@@ -152,7 +161,8 @@ void routingMessageHandler(Message temp, vector<vector<int>>& routingTable, Pack
 	}
 	
 	if (updatedTable == true){
-		sendUpdatedTable(routingTable,packetGenerator,client);
+		cout << "I want to send out my table!" << endl;
+		sendUpdatedTable(routingTable,packetGenerator,client, );
 		updatedTable = false;
 	}
 	// TODO:
@@ -166,32 +176,30 @@ vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, Blocking
 	
 	// - Broadcast initial discover message, using CSMA/CD
 	Message sendMessage;
-	vector<vector<int>> routingTable;
+	// Initialize the routingtable with "infinite"
+	vector<vector<int>> routingTable = {{99, 99, 99, 99}, {99, 99, 99, 99}, {99, 99, 99, 99},{99, 99, 99, 99}};
 
 	vector<Message> pingVector = packetGenerator->generatePingPacket(client);
 
 	sendMessage = pingVector[0];
 	senderQueue->push(sendMessage); // HAVE TO ADD THE HEADER AND SENDING FUNCTION HERE, ADD ROUTING FLAG AS WELL
+	cout << "Sent the first ping message!" << endl;
 
 	// Add received discover messages to routingTable
 	bool tableConverged = false;
 	while(tableConverged == false){
-		
-		chrono::milliseconds timeout(5000);
-
 		Message temp = receiverQueue->pop();
 		routingMessageHandler(temp, routingTable, packetGenerator, client);
 
 		// While no new packet in queue, update timer,
 		// if timer is higher than treshhold
-		chrono::steady_clock::time_point start = chrono::steady_clock::now();
-		while (receiverQueue->isempty() == true){
-			if (chrono::steady_clock::now() - start >= timeout){
-				tableConverged = true;
-				break;
-			}
-		}
-
+		// chrono::steady_clock::time_point start = chrono::steady_clock::now();
+		// while (receiverQueue->isempty() == true){
+		// 	if (chrono::steady_clock::now() - start >= timeout){
+		// 		tableConverged = true;
+		// 		break;
+		// 	}
+		// }
 	}
 	
 	return routingTable;
