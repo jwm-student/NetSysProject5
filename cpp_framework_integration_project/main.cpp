@@ -187,24 +187,6 @@ vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, Blocking
 	return routingTable;
 }
 
-
-void updateTimeout(unsigned int sourceAddress, vector<chrono::steady_clock::time_point>& timeouts){
-	// Should be called when receiving any message to reset the source timers
-	// ADD THIS TO A LOW LEVEL INCOMING MESSAGE HANDLER
-	
-	timeouts[sourceAddress] = chrono::steady_clock::now();
-}
-
-void checkTimers(vector<chrono::steady_clock::time_point>& timeouts, chrono::milliseconds routerTimeout, vector<vector<int>>& routingTable){
-	// This function checks timeouts and updates the routingtable if neccesary
-	for (int i = 0; i < timeouts.size(); i++){
-		if (chrono::steady_clock::now() - timeouts[i] >= routerTimeout){
-			routingTable[i][i] = 99;
-			sendUpdatedTable(routingTable);
-		}
-	}
-}
-
 int main() {
 	BlockingQueue< Message > receiverQueue; // Queue messages will arrive in
 	BlockingQueue< Message > senderQueue; // Queue for data to transmit
@@ -222,17 +204,9 @@ int main() {
 	routingTable = initializeDVR(&senderQueue, &receiverQueue, client.getMyAddr());
 
 	thread inputHandler(readInput, &senderQueue, client.getMyAddr());
-
-	chrono::seconds routerTimeout(30);
-	vector<chrono::steady_clock::time_point> timeouts;
 	
 	// Handle messages from the server / audio framework
 	while(true){
-		// Check for timers while waiting for new message
-		while (receiverQueue.isempty() == true){
-			checkTimers(timeouts, routerTimeout, routingTable);
-			this_thread::sleep_for(100ms);
-		}
 		Message temp = receiverQueue.pop(); // wait for a message to arrive
 		// cout << "Received: " << temp.type << endl; // print received chars
 		switch (temp.type) {
