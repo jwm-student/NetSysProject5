@@ -91,7 +91,8 @@ int main() {
 			bitset<8> seqNumSent((temp.data[1] & 0b111));
 			cout << "Tempdatazero shifted: " << tempdatazero << endl;
 			cout << "seqnumSent: " << seqNumSent << endl;
-			senderQueue.push(ackVector[0]);
+			// senderQueue.push(ackVector[0]);
+			collisionAvoidance.sendMessageCA(ackVector, &senderQueue);
 			cout << endl;
 			break;
 		}

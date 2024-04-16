@@ -41,9 +41,10 @@ void CollisionAvoidance::sendMessageCA(vector<Message> packets, BlockingQueue< M
         //EN tot die tijd evt. opnieuw gestuurd kan worden bij geen ACK.
         packets.erase(packets.begin());
         if(queueIsBusy(getReceivedMessageType()) == false){
-            printf(" free to send");
+            printf(" free to send ");
             senderQueue->push(sendThisMessage);
         } else {
+            printf("ik kan instant sturen");
             senderQueue->push(sendThisMessage);
         }
     }
