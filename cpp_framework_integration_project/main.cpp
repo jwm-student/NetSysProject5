@@ -22,7 +22,7 @@ std::string SERVER_ADDR = "netsys.ewi.utwente.nl"; //"127.0.0.1"
 // The port to connect to. 8954 for the simulation server
 int SERVER_PORT = 8954;
 // The frequency to connect on.
-int FREQUENCY = 8050;//TODO: Set this to your group frequency!
+int FREQUENCY = 8090;//TODO: Set this to your group frequency!
 // The token you received for your frequency range
 std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
@@ -36,25 +36,8 @@ while (true) {
 		getline(cin, input); //read input from stdin
 		if(input.size() < 16*30){
 			vector<Message> packets = packetGenerator->generatePackets(input, client);
-			while(packets.size()>0){
-            	//assign first added Message to be send.
-            	Message sendThisMessage = packets.front();
-            	//pop the same message out of senderMessageVector.
-	
-            	//Je mag deze wel erasen, maar zorg ervoor dat hij eerst in een 
-            	//andere vector<Message> opgeslagen wordt. Zodat pas bij een ACK hij daadwerkelijk loesoe is.
-            	//EN tot die tijd evt. opnieuw gestuurd kan worden bij geen ACK.
-            	packets.erase(packets.begin());
-	
-            	//run the checks
-            	if((AC->queueIsBusy(AC->getReceivedMessageType().type)) == false){
-            	    printf("ik was busy en kan nu sturen");
-            	    senderQueue->push(sendThisMessage);
-            	} else {
-            	    printf("ik kan sws senden!");
-            	    senderQueue->push(sendThisMessage);
-            	}
-        	}
+			//Send message using CA
+			AC->sendMessageCA(packets, senderQueue);
 		}
 		else{
 			cout << "Message too long, please write a shorter message!" << endl;
@@ -188,6 +171,9 @@ vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, Blocking
 	// Add received discover messages to routingTable
 	bool tableConverged = false;
 	while(tableConverged == false){
+		
+		chrono::milliseconds timeout(10000);
+
 		Message temp = receiverQueue->pop();
 		routingMessageHandler(temp, routingTable, packetGenerator, client);
 
