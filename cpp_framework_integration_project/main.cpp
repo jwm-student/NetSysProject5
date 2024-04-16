@@ -36,25 +36,8 @@ while (true) {
 		getline(cin, input); //read input from stdin
 		if(input.size() < 16*30){
 			vector<Message> packets = packetGenerator->generatePackets(input, client);
-			while(packets.size()>0){
-            	//assign first added Message to be send.
-            	Message sendThisMessage = packets.front();
-            	//pop the same message out of senderMessageVector.
-	
-            	//Je mag deze wel erasen, maar zorg ervoor dat hij eerst in een 
-            	//andere vector<Message> opgeslagen wordt. Zodat pas bij een ACK hij daadwerkelijk loesoe is.
-            	//EN tot die tijd evt. opnieuw gestuurd kan worden bij geen ACK.
-            	packets.erase(packets.begin());
-	
-            	//run the checks
-            	if((AC->queueIsBusy(AC->getReceivedMessageType().type)) == false){
-            	    printf("ik was busy en kan nu sturen");
-            	    senderQueue->push(sendThisMessage);
-            	} else {
-            	    printf("ik kan sws senden!");
-            	    senderQueue->push(sendThisMessage);
-            	}
-        	}
+			//Send message using CA
+			AC->sendMessageCA(packets, senderQueue);
 		}
 		else{
 			cout << "Message too long, please write a shorter message!" << endl;
