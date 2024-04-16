@@ -15,6 +15,9 @@
 #include "CollisionAvoidance.h"
 
 using namespace std;
+CollisionAvoidance::CollisionAvoidance(BlockingQueue< Message > *senderQueue){
+    this->senderQueue = senderQueue;
+}
 
 MessageType CollisionAvoidance::getReceivedMessageType(){
     return typeMessage;
@@ -31,7 +34,7 @@ bool CollisionAvoidance::queueIsBusy(MessageType RM){
     return false;
 }
 
-void CollisionAvoidance::sendMessageCA(vector<Message> packets, BlockingQueue< Message > *senderQueue){
+void CollisionAvoidance::sendMessageCA(vector<Message> packets){
     while(packets.size()>0){
         Message sendThisMessage = packets.front();
         //pop the same message out of senderMessageVector.

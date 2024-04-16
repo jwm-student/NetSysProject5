@@ -5,11 +5,13 @@
 class CollisionAvoidance {
     private:
         MessageType typeMessage;
+        BlockingQueue< Message > *senderQueue;
 
     public:
+        CollisionAvoidance(BlockingQueue< Message > *senderQueue);
         MessageType getReceivedMessageType();
         void setReceivedMessageType(MessageType);
         bool queueIsBusy(MessageType);
-        void sendMessageCA(vector<Message>, BlockingQueue< Message >* senderQueue);
+        void sendMessageCA(vector<Message>);
 
 };

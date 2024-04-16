@@ -37,7 +37,7 @@ void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidan
 		if(input.size() < 16*30){
 			vector<Message> packets = packetGenerator->generatePackets(input, client);
 			//Send message via Collision Avoidance
-			AC->sendMessageCA(packets, senderQueue);
+			AC->sendMessageCA(packets);
 		}
 		else{
 			cout << "Message too long, please write a shorter message!" << endl;
@@ -67,9 +67,9 @@ int main() {
 			cout << "Invalid input, please enter 0, 1, 2 or 3." << addrInput <<endl;
 		}
 	}
-
+	//Initialize Client and CollisionAvoidance
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
-	CollisionAvoidance collisionAvoidance;
+	CollisionAvoidance collisionAvoidance(&senderQueue);
 	
 	client.startThread();
 
@@ -92,8 +92,9 @@ int main() {
 			cout << "Tempdatazero shifted: " << tempdatazero << endl;
 			cout << "seqnumSent: " << seqNumSent << endl;
 			// senderQueue.push(ackVector[0]);
-			collisionAvoidance.sendMessageCA(ackVector, &senderQueue);
+			collisionAvoidance.sendMessageCA(ackVector);
 			cout << endl;
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			break;
 		}
 		case DATA_SHORT:{ // We received a short data frame!
