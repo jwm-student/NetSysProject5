@@ -87,12 +87,14 @@ int main() {
 			for (char c : temp.data) {
 				cout << c << ",";
 			}
-			vector<Message> ackVector = packetGenerator.generateAckPacket((temp.data[1] & 0b111),&client,((temp.data[0] & 0b11000000) >> 6));
-			bitset<8> tempdatazero((temp.data[0]>>6));
-			bitset<8> seqNumSent((temp.data[1] & 0b111));
-			cout << "Tempdatazero shifted: " << tempdatazero << endl;
-			cout << "seqnumSent: " << seqNumSent << endl;
-			senderQueue.push(ackVector[0]);
+			if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
+				vector<Message> ackVector = packetGenerator.generateAckPacket((temp.data[1] & 0b111),&client,((temp.data[0] & 0b11000000) >> 6));
+				bitset<8> tempdatazero((temp.data[0]>>6));
+				bitset<8> seqNumSent((temp.data[1] & 0b111));
+				cout << "Tempdatazero shifted: " << tempdatazero << endl;
+				cout << "seqnumSent: " << seqNumSent << endl;
+				senderQueue.push(ackVector[0]);	
+			}
 			cout << endl;
 			break;
 		}
@@ -101,10 +103,12 @@ int main() {
 			for (char c : temp.data) {
 				cout << c << ",";
 			}
-			bitset<8> shortReceived(temp.data[0]);
-			bitset<8> shortReceivedScnd(temp.data[1]);
-			cout << "First bit of ACK received: " << shortReceived << endl;
-			cout << "2nd bit of ACK received: " << shortReceivedScnd << endl;
+			if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
+				bitset<8> shortReceived(temp.data[0]);
+				bitset<8> shortReceivedScnd(temp.data[1]);
+				cout << "First bit of ACK received: " << shortReceived << endl;
+				cout << "2nd bit of ACK received: " << shortReceivedScnd << endl;
+			}
 			break;
 		}
 		case FREE: // The channel is no longer busy (no nodes are sending within our detection range)
