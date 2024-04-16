@@ -152,3 +152,64 @@ vector<Message> PacketGenerator::generateSingleDataPacket(std::string input, Cli
     client->increaseSeqNum();
 	return output;
 }
+
+vector<Message> PacketGenerator::generatePingPacket(Client* client){
+    vector<Message> output;
+
+    // Set first 2 bits to be the source address
+	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	int firstByte = senderAddress << 6; 
+
+    bitset<8> sendAddr(senderAddress);
+    std::cout << "Sender address in bits: " << sendAddr << std::endl;
+	// Set second 2 bits to be destination address
+
+    // Create second byte
+    int secondByte = 0b10000000;
+
+    //TODO: Impelement next hop when relevant!
+    vector<char> char_vec; // put input in char vector
+    char_vec.push_back(firstByte);
+    char_vec.push_back(secondByte);
+
+    Message sendMessage;
+    sendMessage = Message(DATA_SHORT, char_vec);
+    output.push_back(sendMessage);
+
+	return output;
+}
+
+vector<Message> PacketGenerator::generateRoutingPacket(vector<char> sendingTable, Client* client){
+    vector<Message> output;
+	// Vector for padding
+	vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
+
+	/// Add header
+	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	// Set first 2 bits to be the source address
+	int firstByte = senderAddress << 6; 
+
+	// Set second 2 bits to be destination address
+	int destAddress = 0b11; // TO-DO: implement dynamic destination address
+	firstByte = firstByte | (destAddress << 4);
+    // Create 2nd Header Byte
+    int secondByte = 0b10000000;
+
+    vector<char> char_vec;
+    char_vec.push_back((char)firstByte);
+    char_vec.push_back((char)secondByte);
+    char_vec.insert(char_vec.end(),sendingTable.begin(),sendingTable.end());
+
+    Message sendMessage;
+    if (char_vec.size() > 2) {
+        // TO-DO: See if just a for loop pushing back each char of the input works better
+        char_vec.insert(char_vec.end(),zeroVector.begin(),zeroVector.end()); // Append 0 vector
+        sendMessage = Message(DATA, char_vec);
+        output.push_back(sendMessage);
+    }
+    else {
+        sendMessage = Message(DATA_SHORT, char_vec);
+        output.push_back(sendMessage);
+    }
+	return output;
+}
