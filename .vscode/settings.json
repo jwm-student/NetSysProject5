@@ -1,6 +1,13 @@
 {
     "files.associations": {
         "xstring": "cpp",
+        "ostream": "cpp",
+        "thread": "cpp"
+    }
+}
+{
+    "files.associations": {
+        "xstring": "cpp",
         "vector": "cpp"
     }
 }
