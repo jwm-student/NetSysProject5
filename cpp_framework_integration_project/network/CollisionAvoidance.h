@@ -9,5 +9,6 @@ class CollisionAvoidance {
     public:
 	    Message getReceivedMessageType();
 	    void setReceivedMessageType(Message);
+        bool queueIsBusy(MessageType);
 
 };

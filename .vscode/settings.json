@@ -70,3 +70,9 @@
         "xutility": "cpp"
     }
 }
+{
+    "files.associations": {
+        "xstring": "cpp",
+        "vector": "cpp"
+    }
+}
