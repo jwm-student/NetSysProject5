@@ -24,26 +24,23 @@ TUI::TUI(Client* client, PacketGenerator *packetGenerator, CollisionAvoidance *c
 }
 
 int TUI::setDestinationAddress(){
-    bool input_valid = false;
-    string destAddress;
+	bool input_valid = false;
+	string addrInput;
+	int dest_addr = -1; // initialized to wrong value so it has to be changed.
 
-    //wrongly initialized, so it has to change.
-    char dest_addr = '4';
-    printf("You can set the destination address to the following nodes: ");
-    //print statement with possibilities, excluding their own.
-
-    //Loop until valid input
-    while(!input_valid){
-        getline(cin, destAddress);
-        dest_addr = destAddress.at(0);
-        my_addr = client->getMyAddr();
-        if(dest_addr != my_addr && (my_addr == '0' || my_addr == '1' || my_addr == '2' || my_addr == '3')){
+    cout << "Please enter the address of the node you want to send a message to" << endl;
+	// Loop until valid input
+	while(!input_valid){
+		getline(cin,addrInput);
+		if(addrInput == "0" || addrInput == "1" || addrInput == "2" || addrInput == "3"){
 			input_valid = true;
-        } else {
-            cout << "Invalid input, please enter 0, 1, 2 or 3." << destAddress <<endl;
-        }
-    }
-    return dest_addr - '0';
+		}
+		else{
+			cout << "Invalid input, please enter 0, 1, 2 or 3." << addrInput <<endl;
+		}
+	}
+    dest_addr = int(addrInput.at(0) - '0');
+    return dest_addr;
 }
 
 void TUI::processInput(std::string input){
