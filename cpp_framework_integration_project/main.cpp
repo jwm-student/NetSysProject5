@@ -5,11 +5,13 @@
 #include <bitset>
 #include <chrono>
 
+#include "utils/TUI.h"
 #include "utils/BlockingQueue.h"
 #include "network/Client.h"
 #include "utils/Message.h"
 #include "network/CollisionAvoidance.h"
 #include "network/PacketGenerator.hpp"
+
 
 /**
 * This is just some example code to show you how to interact 
@@ -29,19 +31,12 @@ std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
 using namespace std;
 
-void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidance* AC, Client* client, PacketGenerator* packetGenerator) {
+void readInput(BlockingQueue< Message >*senderQueue, TUI *tui) {
 	while (true) {
+		cout << "Enter your command: " << endl;
 		string input;
-		cout << "Enter your message: " << endl;
-		getline(cin, input); //read input from stdin
-		if(input.size() < 16*30){
-			vector<Message> packets = packetGenerator->generatePackets(input, client);
-			//Send message via Collision Avoidance
-			AC->sendMessageCA(packets);
-		}
-		else{
-			cout << "Message too long, please write a shorter message!" << endl;
-		}
+		getline(cin, input);
+		tui->processInput(input);
 	}
 }
 
@@ -70,10 +65,11 @@ int main() {
 	//Initializing classes.
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
 	CollisionAvoidance collisionAvoidance(&senderQueue);
+	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance);
 	
 	client.startThread();
 
-	thread inputHandler(readInput, &senderQueue, client.getMyAddr(), &collisionAvoidance, &client, &packetGenerator);
+	thread inputHandler(readInput, &senderQueue, &tui);
 	
 	// Handle messages from the server / audio framework
 	while(true){

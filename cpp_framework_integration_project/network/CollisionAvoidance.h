@@ -1,3 +1,6 @@
+#ifndef COLLISIONAVOIDANCE_H
+#define COLLISIONAVOIDANCE_H
+
 #include "../utils/BlockingQueue.h"
 #include "../utils/Message.h"
 #include "../utils/MessageType.h"
@@ -15,3 +18,5 @@ class CollisionAvoidance {
         void sendMessageCA(vector<Message>);
 
 };
+
+#endif //COLLISIONAVOIDANCE_H

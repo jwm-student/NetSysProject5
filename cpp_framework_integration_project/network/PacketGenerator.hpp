@@ -1,3 +1,6 @@
+#ifndef PACKETGENERATOR_HPP
+#define PACKETGENERATOR_HPP
+
 #include "../utils/BlockingQueue.h"
 #include "../utils/Message.h"
 #include "../utils/MessageType.h"
@@ -22,3 +25,5 @@ class PacketGenerator {
         vector<Message> generateMultiPacket(std::string input, Client* client);
         vector<Message> generateSingleDataPacket(std::string input, Client* client);
 };
+
+#endif //PACKETGENERATOR_HPP

@@ -13,11 +13,14 @@
 #endif
 
 #include "TUI.h"
+#include "../network/PacketGenerator.hpp"
 
 using namespace std;
 
-TUI::TUI(Client* client){
+TUI::TUI(Client* client, PacketGenerator *packetGenerator, CollisionAvoidance *collisionAvoidance){
     this->client = client;
+    this->packetGenerator = packetGenerator;
+    this->collisionAvoidance = collisionAvoidance;
 }
 
 int TUI::setDestinationAddress(){
@@ -41,4 +44,67 @@ int TUI::setDestinationAddress(){
         }
     }
     return dest_addr - '0';
+}
+
+void TUI::processInput(std::string input){
+    if(input.size() > 2 || input.size() <= 1){
+        cout << "Invalid command. Type '-H' to see the list of available commands" << endl;
+    }
+    else if (input == "-H")
+    {
+        printMenu();
+    }
+    else if (input == "-B")
+    {
+        string messageContent;
+        cout << "What is the message would you like to send?" << endl;
+        getline(cin, messageContent);
+        if(messageContent.size() < (16 * 30)){
+            cout << "Broadcasting your message" << endl;
+            // Give input to network layer
+            vector<Message> packets = packetGenerator->generatePackets(input, client);
+			//Send message via Collision Avoidance
+			collisionAvoidance->sendMessageCA(packets);
+        }
+        else{
+            cout << "You're message is too long. Please use the command again and write a shorter message" << endl;
+        }
+    }
+    else if (input == "-U")
+    {
+        int destAddr = setDestinationAddress();
+        string messageContent;
+        cout << "What is the message would you like to send?" << endl;
+        getline(cin, messageContent);
+        if(messageContent.size() < (16 * 30)){
+            cout << "Sending your message to " << destAddr << endl;
+            // TO-DO: give input to network layer
+        }
+        else{
+            cout << "You're message is too long. Please use the command again and write a shorter message" << endl;
+        }
+        
+    }
+    else if (input == "-P")
+    {
+        printReachableNodes();
+    }
+    else if (input == "-Q")
+    {
+        cout << "Use 'Ctrl + C' to quit the application." << endl;
+    }    
+}
+
+void TUI::printMenu(){
+    cout << "Commands: \n" <<
+    "-H     Help, prints command list \n" <<
+    "-B     Broadcast, sends message to all nodes \n" <<
+    "-U     Unicast, sends message to one node \n" <<
+    "-P     Prints reachable nodes" <<
+    "-Q     Quit \n" 
+    << endl;
+}
+
+void TUI::printReachableNodes(){
+    cout << "This function still has to be written. " << endl;
 }
