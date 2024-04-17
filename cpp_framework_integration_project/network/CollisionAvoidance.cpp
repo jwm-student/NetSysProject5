@@ -24,7 +24,8 @@ void CollisionAvoidance::setReceivedMessageType(MessageType newMessageType){
     // printf("ik ben lekker aan het setten");
 }
 bool CollisionAvoidance::queueIsBusy(MessageType RM){
-    while(getReceivedMessageType() == BUSY || getReceivedMessageType() == SENDING || getReceivedMessageType() == DATA){
+    while(getReceivedMessageType() == BUSY || getReceivedMessageType() == SENDING || getReceivedMessageType() == DATA || getReceivedMessageType() == DATA_SHORT){
+        //printf("Ik ben aan het loopen");
         int rn = (rand() % 50);
         std::this_thread::sleep_for(std::chrono::milliseconds(rn));
     }
@@ -33,6 +34,7 @@ bool CollisionAvoidance::queueIsBusy(MessageType RM){
 
 void CollisionAvoidance::sendMessageCA(vector<Message> packets, BlockingQueue< Message > *senderQueue){
     while(packets.size()>0){
+        std::cout << "got packet in queue, link is " << getReceivedMessageType() << endl;
         Message sendThisMessage = packets.front();
         //pop the same message out of senderMessageVector.
     
