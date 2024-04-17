@@ -44,7 +44,14 @@ void CollisionAvoidance::sendMessageCA(vector<Message> packets, BlockingQueue< M
             printf(" free to send");
             senderQueue->push(sendThisMessage);
         } else {
-            senderQueue->push(sendThisMessage);
+            // In case of a ping, nodes may send at the exact same time. Preventing this we add an extra random sleep:
+            int rn = (rand() % 50);
+            std::this_thread::sleep_for(std::chrono::milliseconds(rn));
+            if(queueIsBusy(getReceivedMessageType()) == false){
+                senderQueue->push(sendThisMessage);
+            } else {
+                senderQueue->push(sendThisMessage);
+            }
         }
     }
 }
