@@ -40,18 +40,11 @@ void CollisionAvoidance::sendMessageCA(vector<Message> packets, BlockingQueue< M
         //andere vector<Message> opgeslagen wordt. Zodat pas bij een ACK hij daadwerkelijk loesoe is.
         //EN tot die tijd evt. opnieuw gestuurd kan worden bij geen ACK.
         packets.erase(packets.begin());
+        int rn = (rand() % 50);
+        std::this_thread::sleep_for(std::chrono::milliseconds(rn));
         if(queueIsBusy(getReceivedMessageType()) == false){
             printf(" free to send");
             senderQueue->push(sendThisMessage);
-        } else {
-            // In case of a ping, nodes may send at the exact same time. Preventing this we add an extra random sleep:
-            int rn = (rand() % 50);
-            std::this_thread::sleep_for(std::chrono::milliseconds(rn));
-            if(queueIsBusy(getReceivedMessageType()) == false){
-                senderQueue->push(sendThisMessage);
-            } else {
-                senderQueue->push(sendThisMessage);
-            }
-        }
+        } 
     }
 }
