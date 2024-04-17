@@ -43,7 +43,7 @@ void readInput(BlockingQueue< Message >*senderQueue, TUI *tui) {
 int main() {
 	BlockingQueue< Message > receiverQueue; // Queue messages will arrive in
 	BlockingQueue< Message > senderQueue; // Queue for data to transmit
-	PacketGenerator packetGenerator;
+	
 
 	// Ask for address input. Should be between 0, 1, 2 or 3
 	cout << "Please enter an address for this client (0, 1, 2 or 3)" << endl;
@@ -65,6 +65,7 @@ int main() {
 	//Initializing classes.
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
 	CollisionAvoidance collisionAvoidance(&senderQueue);
+	PacketGenerator packetGenerator(&client);
 	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance);
 	
 	client.startThread();
@@ -82,7 +83,7 @@ int main() {
 			for (char c : temp.data) {
 				cout << c << ",";
 			}
-			vector<Message> ackVector = packetGenerator.generateAckPacket((temp.data[1] & 0b111),&client,((temp.data[0] & 0b11000000) >> 6));
+			vector<Message> ackVector = packetGenerator.generateAckPacket((temp.data[1] & 0b111),((temp.data[0] & 0b11000000) >> 6));
 			bitset<8> tempdatazero((temp.data[0]>>6));
 			bitset<8> seqNumSent((temp.data[1] & 0b111));
 			cout << "Tempdatazero shifted: " << tempdatazero << endl;

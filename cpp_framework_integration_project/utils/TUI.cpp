@@ -62,7 +62,7 @@ void TUI::processInput(std::string input){
         if(messageContent.size() < (16 * 30)){
             cout << "Broadcasting your message" << endl;
             // Give input to network layer
-            vector<Message> packets = packetGenerator->generatePackets(input, client);
+            vector<Message> packets = packetGenerator->generatePackets(messageContent);
 			//Send message via Collision Avoidance
 			collisionAvoidance->sendMessageCA(packets);
         }
@@ -78,7 +78,10 @@ void TUI::processInput(std::string input){
         getline(cin, messageContent);
         if(messageContent.size() < (16 * 30)){
             cout << "Sending your message to " << destAddr << endl;
-            // TO-DO: give input to network layer
+            // Give input to network layer
+            vector<Message> packets = packetGenerator->generatePackets(messageContent,destAddr);
+			//Send message via Collision Avoidance
+			collisionAvoidance->sendMessageCA(packets);
         }
         else{
             cout << "You're message is too long. Please use the command again and write a shorter message" << endl;

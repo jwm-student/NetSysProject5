@@ -12,18 +12,18 @@
 
 class PacketGenerator {
     private:
-        enum PacketType{
-            ACK,
-            MULTI,
-            SINGLE
-        };
+        Client* client;
 
     public:
-	    PacketGenerator();
-        vector<Message> generatePackets(std::string input, Client* client);
-        vector<Message> generateAckPacket(int seqNum, Client* client, int destAddr);
-        vector<Message> generateMultiPacket(std::string input, Client* client);
-        vector<Message> generateSingleDataPacket(std::string input, Client* client);
+	    PacketGenerator(Client* client);
+        vector<Message> generatePackets(std::string input);
+        vector<Message> generatePackets(std::string input, int destAddr);
+
+        vector<Message> generateAckPacket(int seqNum, int destAddr);
+        vector<Message> generateMultiPacket(std::string input);
+        vector<Message> generateSingleDataPacket(std::string input);
+        vector<Message> generateMultiPacket(std::string input, int destAddr);
+        vector<Message> generateSingleDataPacket(std::string input, int destAddr);
 };
 
 #endif //PACKETGENERATOR_HPP
