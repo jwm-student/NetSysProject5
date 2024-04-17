@@ -2,6 +2,7 @@
 #include "../utils/Message.h"
 #include "../utils/MessageType.h"
 #include "Client.h"
+#include "../utils/TUI.h"
 
 #include <vector>
 #include <string>

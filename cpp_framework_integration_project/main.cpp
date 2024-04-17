@@ -67,7 +67,7 @@ int main() {
 			cout << "Invalid input, please enter 0, 1, 2 or 3." << addrInput <<endl;
 		}
 	}
-	//Initialize Client and CollisionAvoidance
+	//Initializing classes.
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
 	CollisionAvoidance collisionAvoidance(&senderQueue);
 	
