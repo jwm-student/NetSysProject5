@@ -16,7 +16,4 @@
         - Als timer afloopt:
             - stuur keepalive bericht
 
-- InitializeDVR fix:
-    - zet het ontvanggedeelte van InitializeDVR in de while loop van main
-    - Maak een aparte thread voor het verzenden van routing tabellen
-    - zorg voor een bool waarin de main loop kan zorgen dat de sendingRoutingTable thread een bericht stuurt
+- 
