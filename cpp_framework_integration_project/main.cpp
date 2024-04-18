@@ -6,6 +6,7 @@
 #include <chrono>
 #include <functional>
 
+#include "utils/TUI.h"
 #include "utils/BlockingQueue.h"
 #include "network/Client.h"
 #include "utils/Message.h"
@@ -24,26 +25,19 @@ std::string SERVER_ADDR = "netsys.ewi.utwente.nl"; //"127.0.0.1"
 // The port to connect to. 8954 for the simulation server
 int SERVER_PORT = 8954;
 // The frequency to connect on.
-int FREQUENCY = 8010;//TODO: Set this to your group frequency!
+int FREQUENCY = 8090;//TODO: Set this to your group frequency!
 // The token you received for your frequency range
 std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
 
 using namespace std;
 
-void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidance* AC, Client* client, PacketGenerator* packetGenerator) {
-while (true) {
+void readInput(BlockingQueue< Message >*senderQueue, TUI *tui) {
+	while (true) {
+		cout << "Enter your command: " << endl;
 		string input;
-		std::cout << "Enter your message: " << std::endl;
-		getline(cin, input); //read input from stdin
-		if(input.size() < 16*30){
-			vector<Message> packets = packetGenerator->generatePackets(input, client);
-			//Send message using CA
-			AC->sendMessageCA(packets, senderQueue);
-		}
-		else{
-			std::cout << "Message too long, please write a shorter message!" << std::endl;
-		}
+		getline(cin, input);
+		tui->processInput(input);
 	}
 }
 void sendUpdatedTable(vector<vector<int>>& routingTable, PacketGenerator* PacketGenerator, Client* client,CollisionAvoidance* AC,BlockingQueue< Message >*senderQueue, bool& sendRoutingTable){
@@ -240,10 +234,11 @@ int main() {
 			std::cout << "Invalid input, please enter 0, 1, 2 or 3." << addrInput <<std::endl;
 		}
 	}
-
-
+	//Initializing classes.
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
-	CollisionAvoidance collisionAvoidance;
+	CollisionAvoidance collisionAvoidance(&senderQueue);
+	PacketGenerator packetGenerator(&client);
+	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance);
 	
 	client.startThread();
 	
@@ -252,6 +247,7 @@ int main() {
 	// Sends the first discovery ping
 	sendPing(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
+	thread inputHandler(readInput, &senderQueue, &tui);
 	thread inputHandler(readInput, &senderQueue, client.getMyAddr(), &collisionAvoidance, &client, &packetGenerator);
 	thread routingTableSender(sendUpdatedTable, std::ref(routingTable), &packetGenerator, &client, &collisionAvoidance, &senderQueue, std::ref(sendRoutingTable));
 	

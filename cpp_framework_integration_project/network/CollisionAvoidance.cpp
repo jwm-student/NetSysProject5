@@ -15,10 +15,18 @@
 #include "CollisionAvoidance.h"
 
 using namespace std;
+CollisionAvoidance::CollisionAvoidance(BlockingQueue< Message > *senderQueue){
+    this->senderQueue = senderQueue;
+}
 
 MessageType CollisionAvoidance::getReceivedMessageType(){
     return typeMessage;
+MessageType CollisionAvoidance::getReceivedMessageType(){
+    return typeMessage;
 }
+void CollisionAvoidance::setReceivedMessageType(MessageType newMessageType){
+    typeMessage = newMessageType;
+    // printf("ik ben lekker aan het setten");
 void CollisionAvoidance::setReceivedMessageType(MessageType newMessageType){
     typeMessage = newMessageType;
     // printf("ik ben lekker aan het setten");
