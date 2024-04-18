@@ -108,3 +108,5 @@ void TUI::printMenu(){
 void TUI::printReachableNodes(){
     cout << "This function still has to be written. " << endl;
 }
+
+//TO-DO Implement choosing own address function

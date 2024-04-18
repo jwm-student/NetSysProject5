@@ -14,12 +14,6 @@
 #include "network/PacketGenerator.hpp"
 #include "network/PacketProcessor.hpp"
 
-/**
-* This is just some example code to show you how to interact 
-* with the server using the provided client and two queues.
-* Feel free to modify this code in any way you like!
-*/
-
 // The address to connect to. Set this to localhost to use the audio interface tool.
 std::string SERVER_ADDR = "netsys.ewi.utwente.nl"; //"127.0.0.1"
 // The port to connect to. 8954 for the simulation server
@@ -32,7 +26,7 @@ std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
 using namespace std;
 
-void readInput(BlockingQueue< Message >*senderQueue, TUI *tui) {
+void readInput(TUI *tui) {
 	while (true) {
 		cout << "Enter your command: " << endl;
 		string input;
@@ -214,30 +208,21 @@ int main() {
 	std::cout << "Please enter an address for this client (0, 1, 2 or 3)" << std::endl;
 	bool input_valid = false;
 	string addrInput;
-	char my_addr = '4'; // initialized to wrong value so it has to be changed.
-
+	int my_addr = 4; // initialized to wrong value so it has to be changed.
+	
 	// DVR variables
 	bool tableConverged = false;
 	bool sendRoutingTable = false;
 	vector<vector<int>> routingTable = {{99, 99, 99, 99}, {99, 99, 99, 99}, {99, 99, 99, 99},{99, 99, 99, 99}};
 
-	// Loop until valid input
-	while(!input_valid){
-		getline(cin,addrInput);
-		my_addr = addrInput.at(0);
-		if(my_addr == '0' || my_addr == '1' || my_addr == '2' || my_addr == '3'){
-			input_valid = true;
-		}
-		else{
-			std::cout << "Invalid input, please enter 0, 1, 2 or 3." << addrInput <<std::endl;
-		}
-	}
 	//Initializing classes.
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
 	CollisionAvoidance collisionAvoidance(&senderQueue);
 	PacketGenerator packetGenerator(&client);
 	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance);
 	
+	client.setMyAddr(tui.setDestinationAddress()); // set address to input of user
+
 	client.startThread();
 	
 	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client);
@@ -245,7 +230,7 @@ int main() {
 	// Sends the first discovery ping
 	sendPing(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
-	thread inputHandler(readInput, &senderQueue, &tui);
+	thread inputHandler(readInput, &tui);
 	thread routingTableSender(sendUpdatedTable, std::ref(routingTable), &packetGenerator, &client, &collisionAvoidance, &senderQueue, std::ref(sendRoutingTable));
 	
 	// Handle messages from the server / audio framework
@@ -257,10 +242,11 @@ int main() {
 
 		// Go into the InitializeDVR state if table is not yet converged
 		// if (tableConverged == false AND routingBit == 1)
-		if (tableConverged == false){
-			sendRoutingTable = routingMessageHandler(temp, routingTable, &packetGenerator, &client, &collisionAvoidance, &senderQueue);
-			// ADD TIMEOUT FOR TABLECONVERGENCE
-		}
+		//cout << "Table converged = " << tableConverged << endl;
+		// if (tableConverged == false){
+		// 	sendRoutingTable = routingMessageHandler(temp, routingTable, &packetGenerator, &client, &collisionAvoidance, &senderQueue);
+		// 	// ADD TIMEOUT FOR TABLECONVERGENCE
+		// }
 
 		switch (temp.type) {
 		case DATA: {// We received a data frame!
@@ -286,8 +272,6 @@ int main() {
 				std::cout << c << ",";
 			}
 			if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
-
-			
 				bitset<8> shortReceived(temp.data[0]);
 				bitset<8> shortReceivedScnd(temp.data[1]);
 				std::cout << "First bit of ACK received: " << shortReceived << std::endl;

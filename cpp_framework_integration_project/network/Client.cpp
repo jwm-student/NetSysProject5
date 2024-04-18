@@ -23,7 +23,7 @@
 
 using namespace std;
 
-Client::Client(string server_addr, char myAddr, int server_port,  int frequency, string token, BlockingQueue< Message > *senderQueue, BlockingQueue< Message > *receiverQueue) {
+Client::Client(string server_addr, int myAddr, int server_port,  int frequency, string token, BlockingQueue< Message > *senderQueue, BlockingQueue< Message > *receiverQueue) {
 	this->server_addr = server_addr;
 	this->server_port = server_port;
 	this->frequency = frequency;
@@ -35,11 +35,11 @@ Client::Client(string server_addr, char myAddr, int server_port,  int frequency,
 	setExpSeqNum(0);
 }
 
-void Client::setMyAddr(char newAddr){
+void Client::setMyAddr(int newAddr){
 	this->myAddr = newAddr;
 }
 
-char Client::getMyAddr(){
+int Client::getMyAddr(){
 	return myAddr;
 }
 
