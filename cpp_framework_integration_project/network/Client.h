@@ -32,6 +32,7 @@ public:
 	int getExpSeqNum();
 	void setExpSeqNum(int expSeqNum);
 	void increaseExpSeqNum();
+	BlockingQueue<Message>* getSenderQueue();
 };
 
 #endif
