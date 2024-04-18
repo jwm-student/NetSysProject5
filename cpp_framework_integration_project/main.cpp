@@ -194,6 +194,13 @@ bool routingMessageHandler(Message temp, vector<vector<int>>& routingTable, Pack
 			}
 		}
 	}
+	// Print the current table for evaluation
+	for (const auto& row : routingTable) {
+        for (const auto& elem : row) {
+            std::cout << elem << ' ';
+        }
+        std::cout << '\n';
+    }
 	return updatedTable;
 }
 
@@ -204,34 +211,7 @@ void sendPing(BlockingQueue< Message >*senderQueue, Client* client, PacketGenera
 	std::cout << std::endl << "Sent the first ping message!" << std::endl;
 }
 
-vector<vector<int>> initializeDVR(BlockingQueue< Message >*senderQueue, BlockingQueue< Message >*receiverQueue, char addr, Client* client, PacketGenerator* packetGenerator, CollisionAvoidance* AC)  {
-	// This function is used to find the initial topology
-	// It outputs the completed initial lookup table
-	
-	// - Broadcast initial discover message, using CSMA/CD
-	// Initialize the routingtable with "infinite"
-	vector<vector<int>> routingTable = {{99, 99, 99, 99}, {99, 99, 99, 99}, {99, 99, 99, 99},{99, 99, 99, 99}};
 
-
-	// Add received discover messages to routingTable
-	bool tableConverged = false;
-	while(tableConverged == false){
-
-		//routingMessageHandler(temp, routingTable, packetGenerator, client, AC, senderQueue);
-
-		// While no new packet in queue, update timer,
-		// if timer is higher than treshhold
-		// chrono::steady_clock::time_point start = chrono::steady_clock::now();
-		// while (receiverQueue->isempty() == true){
-		// 	if (chrono::steady_clock::now() - start >= timeout){
-		// 		tableConverged = true;
-		// 		break;
-		// 	}
-		// }
-	}
-	
-	return routingTable;
-}
 int main() {
 	BlockingQueue< Message > receiverQueue; // Queue messages will arrive in
 	BlockingQueue< Message > senderQueue; // Queue for data to transmit
@@ -261,12 +241,13 @@ int main() {
 		}
 	}
 
+
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
 	CollisionAvoidance collisionAvoidance;
 	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client);
 	
 	client.startThread();
-
+	
 	// Sends the first discovery ping
 	sendPing(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
