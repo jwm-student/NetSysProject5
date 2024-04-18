@@ -12,6 +12,7 @@
 #include "network/CollisionAvoidance.h"
 #include "network/PacketGenerator.hpp"
 #include "network/DVR.h"
+#include "network/PacketProcessor.hpp"
 
 /**
 * This is just some example code to show you how to interact 
@@ -24,7 +25,7 @@ std::string SERVER_ADDR = "netsys.ewi.utwente.nl"; //"127.0.0.1"
 // The port to connect to. 8954 for the simulation server
 int SERVER_PORT = 8954;
 // The frequency to connect on.
-int FREQUENCY = 8000;//TODO: Set this to your group frequency!
+int FREQUENCY = 8010;//TODO: Set this to your group frequency!
 // The token you received for your frequency range
 std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
@@ -80,6 +81,7 @@ int main() {
 
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
 	CollisionAvoidance collisionAvoidance;
+	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client);
 	
 	client.startThread();
 	

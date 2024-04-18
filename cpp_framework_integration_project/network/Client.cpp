@@ -78,7 +78,9 @@ void Client::increaseExpSeqNum(){
 int Client::getExpSeqNum(){
 	return expSeqNum;
 }
-
+BlockingQueue<Message>* Client::getSenderQueue(){
+	return this->senderQueue;
+}
 int Client::openSocket() {
 #ifdef _WIN32
 	WSADATA wsaData;
