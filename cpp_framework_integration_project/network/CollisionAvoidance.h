@@ -5,9 +5,6 @@
 #include "../utils/Message.h"
 #include "../utils/MessageType.h"
 
-
-#ifndef COLLISION_AVOIDANCE_H
-#define COLLISION_AVOIDANCE_H
 class CollisionAvoidance {
     private:
         MessageType typeMessage;

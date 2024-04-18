@@ -24,5 +24,7 @@ class PacketGenerator {
         vector<Message> generateSingleDataPacket(std::string input);
         vector<Message> generateMultiPacket(std::string input, int destAddr);
         vector<Message> generateSingleDataPacket(std::string input, int destAddr);
+        vector<Message> generatePingPacket(Client* client);
+        vector<Message> generateRoutingPacket(vector<char> sendingTable, Client* client);
 };
 #endif // PACKET_GENERATOR_HPP

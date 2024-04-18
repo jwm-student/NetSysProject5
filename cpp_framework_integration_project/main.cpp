@@ -40,7 +40,7 @@ void readInput(BlockingQueue< Message >*senderQueue, TUI *tui) {
 		tui->processInput(input);
 	}
 }
-void sendUpdatedTable(vector<vector<int>>& routingTable, PacketGenerator* PacketGenerator, Client* client,CollisionAvoidance* AC,BlockingQueue< Message >*senderQueue, bool& sendRoutingTable){
+void sendUpdatedTable(vector<vector<int>>& routingTable, PacketGenerator* packetGenerator, Client* client,CollisionAvoidance* AC,BlockingQueue< Message >*senderQueue, bool& sendRoutingTable){
 	// This function can be called when a local routingtable has been updated
 	// It sends the table to all neighbours, so that they can update theirs
 	// It counts the width and height of the table, adds this to the first two bytes of data
@@ -76,10 +76,10 @@ void sendUpdatedTable(vector<vector<int>>& routingTable, PacketGenerator* Packet
 			}
 
 			std::cout << "size of the sendingtable is: " << sendingTable.size() << std::endl;
-			vector<Message> routingVector = PacketGenerator->generateRoutingPacket(sendingTable,client);
+			vector<Message> routingVector = packetGenerator->generateRoutingPacket(sendingTable,client);
 			Message sendMessage;
 			sendMessage = routingVector[0];
-			AC->sendMessageCA(routingVector, senderQueue);
+			AC->sendMessageCA(routingVector);
 			std::cout << std::endl << "Table sent!" << std::endl;
 			sendRoutingTable = false;
 		}
@@ -201,16 +201,14 @@ bool routingMessageHandler(Message temp, vector<vector<int>>& routingTable, Pack
 void sendPing(BlockingQueue< Message >*senderQueue, Client* client, PacketGenerator* packetGenerator, CollisionAvoidance* AC){
 	Message sendMessage;
 	vector<Message> pingVector = packetGenerator->generatePingPacket(client);
-	AC->sendMessageCA(pingVector, senderQueue);
+	AC->sendMessageCA(pingVector);
 	std::cout << std::endl << "Sent the first ping message!" << std::endl;
 }
 
 
 int main() {
 	BlockingQueue< Message > receiverQueue; // Queue messages will arrive in
-	BlockingQueue< Message > senderQueue; // Queue for data to transmit
-	PacketGenerator packetGenerator;
-	
+	BlockingQueue< Message > senderQueue; // Queue for data to transmit	
 
 	// Ask for address input. Should be between 0, 1, 2 or 3
 	std::cout << "Please enter an address for this client (0, 1, 2 or 3)" << std::endl;
@@ -248,7 +246,6 @@ int main() {
 	sendPing(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
 	thread inputHandler(readInput, &senderQueue, &tui);
-	thread inputHandler(readInput, &senderQueue, client.getMyAddr(), &collisionAvoidance, &client, &packetGenerator);
 	thread routingTableSender(sendUpdatedTable, std::ref(routingTable), &packetGenerator, &client, &collisionAvoidance, &senderQueue, std::ref(sendRoutingTable));
 	
 	// Handle messages from the server / audio framework

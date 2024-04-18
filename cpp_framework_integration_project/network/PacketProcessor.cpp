@@ -34,8 +34,8 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
                 // Add data to buffer
                 buffer.insert(buffer.end(),incomingMessage.data.begin(),incomingMessage.data.end());
                 client->increaseExpSeqNum();
-                vector<Message> ack = PG->generateAckPacket(receivedSeqNum, this->client, srcAddress);
-                CA->sendMessageCA(ack,client->getSenderQueue()); // send ack
+                vector<Message> ack = PG->generateAckPacket(receivedSeqNum, srcAddress);
+                CA->sendMessageCA(ack); // send ack
             }
         } 
         // else if(){ //else if nextHop is me, perform this code and send the message to the new dest
@@ -56,12 +56,12 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
                 // Add data to buffer
                 buffer.insert(buffer.end(),incomingMessage.data.begin(),incomingMessage.data.end());
                 client->increaseExpSeqNum();
-                vector<Message> ack = PG->generateAckPacket(receivedSeqNum, this->client, srcAddress);
-                CA->sendMessageCA(ack,client->getSenderQueue()); // send ack
+                vector<Message> ack = PG->generateAckPacket(receivedSeqNum, srcAddress);
+                CA->sendMessageCA(ack); // send ack
             }
             else{
-                vector<Message> ack = PG->generateAckPacket(receivedSeqNum, this->client, srcAddress);
-                CA->sendMessageCA(ack,client->getSenderQueue()); // send ack
+                vector<Message> ack = PG->generateAckPacket(receivedSeqNum, srcAddress);
+                CA->sendMessageCA(ack); // send ack
             }
         }
     }
