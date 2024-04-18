@@ -2,6 +2,9 @@
 #include "../utils/Message.h"
 #include "../utils/MessageType.h"
 
+
+#ifndef COLLISION_AVOIDANCE_H
+#define COLLISION_AVOIDANCE_H
 class CollisionAvoidance {
     private:
         MessageType typeMessage;
@@ -12,3 +15,5 @@ class CollisionAvoidance {
         bool queueIsBusy(MessageType);
         void sendMessageCA(vector<Message>, BlockingQueue< Message >* senderQueue);
 };
+
+#endif // COLLISION_AVOIDANCE_H

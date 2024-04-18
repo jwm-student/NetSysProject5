@@ -1,3 +1,6 @@
+#ifndef PACKET_GENERATOR_HPP
+#define PACKET_GENERATOR_HPP
+
 #include "../utils/BlockingQueue.h"
 #include "../utils/Message.h"
 #include "../utils/MessageType.h"
@@ -22,10 +25,5 @@ class PacketGenerator {
         vector<Message> generateSingleDataPacket(std::string input, Client* client);
         vector<Message> generatePingPacket(Client* client);
         vector<Message> generateRoutingPacket(vector<char> sendingTable, Client* client);
-
-        void storeAckPacket(vector<Message> storeACK);
-        void storeDataPacket(vector<Message> DataPacket);
-
-        bool checkReceivedAckPacket(vector<Message> newAck);
-        
 };
+#endif // PACKET_GENERATOR_HPP

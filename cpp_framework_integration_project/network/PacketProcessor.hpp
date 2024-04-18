@@ -4,6 +4,9 @@
 #include "PacketGenerator.hpp"
 #include "CollisionAvoidance.h"
 
+#ifndef PACKET_PROCESSOR_H
+#define PACKET_PROCESSOR_H
+
 class PacketProcessor {
     private:
         PacketGenerator *PG;
@@ -19,3 +22,5 @@ class PacketProcessor {
         void processDataPacket(Message);
         void processAckPacket(Message);
 };
+
+#endif // :ACKET_PROCESSOR_H

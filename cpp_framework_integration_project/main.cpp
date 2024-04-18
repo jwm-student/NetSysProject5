@@ -274,15 +274,16 @@ int main() {
 			for (char c : temp.data) {
 				std::cout << c << ",";
 			}
-			if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
-				vector<Message> ackVector = packetGenerator.generateAckPacket((temp.data[1] & 0b111),&client,((temp.data[0] & 0b11000000) >> 6));
-				bitset<8> tempdatazero((temp.data[0]>>6));
-				bitset<8> seqNumSent((temp.data[1] & 0b111));
-				std::cout << "Tempdatazero shifted: " << tempdatazero << std::endl;
-				std::cout << "seqnumSent: " << seqNumSent << std::endl;
-				senderQueue.push(ackVector[0]);	
-			}
-			std::cout << std::endl;
+			PP.processDataPacket(temp);
+			// if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
+			// 	vector<Message> ackVector = packetGenerator.generateAckPacket((temp.data[1] & 0b111),&client,((temp.data[0] & 0b11000000) >> 6));
+			// 	bitset<8> tempdatazero((temp.data[0]>>6));
+			// 	bitset<8> seqNumSent((temp.data[1] & 0b111));
+			// 	std::cout << "Tempdatazero shifted: " << tempdatazero << std::endl;
+			// 	std::cout << "seqnumSent: " << seqNumSent << std::endl;
+			// 	senderQueue.push(ackVector[0]);	
+			// }
+			// std::cout << std::endl;
 			break;
 		}
 		case DATA_SHORT:{ // We received a short data frame!
