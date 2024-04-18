@@ -244,9 +244,10 @@ int main() {
 
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
 	CollisionAvoidance collisionAvoidance;
-	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client);
 	
 	client.startThread();
+	
+	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client);
 	
 	// Sends the first discovery ping
 	sendPing(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
