@@ -6,6 +6,9 @@
 #include <vector>
 #include <string>
 
+#ifndef PACKETGENERATOR_HPP
+#define PACKETGENERATOR_HPP
+
 class PacketGenerator {
     private:
         enum PacketType{
@@ -23,3 +26,4 @@ class PacketGenerator {
         vector<Message> generatePingPacket(Client* client);
         vector<Message> generateRoutingPacket(vector<char> sendingTable, Client* client);
 };
+#endif
