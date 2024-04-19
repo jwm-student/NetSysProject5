@@ -20,7 +20,7 @@ std::string SERVER_ADDR = "netsys.ewi.utwente.nl"; //"127.0.0.1"
 // The port to connect to. 8954 for the simulation server
 int SERVER_PORT = 8954;
 // The frequency to connect on.
-int FREQUENCY = 8000;//TODO: Set this to your group frequency!
+int FREQUENCY = 8090;//TODO: Set this to your group frequency!
 // The token you received for your frequency range
 std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
@@ -62,7 +62,11 @@ int main() {
 
 	client.setMyAddr(tui.setDestinationAddress()); // set address to input of user
 
+	string dummyInput;
 	client.startThread();
+
+	cout << "Press enter to start the client " << endl;
+	getline(cin,dummyInput);
 	
 	DVR DVR(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
