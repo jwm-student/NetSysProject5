@@ -12,5 +12,5 @@ integration: $(src_files)
 clean:
 	rm integration
 
-# g++ -lpthread network/Client.cpp network/DataReceiver.cpp network/CollisionAvoidance.cpp network/DVR.cpp network/PacketGenerator.cpp network/PacketProcessor.cpp main.cpp -lws2_32 -o integration
+# g++ -lpthread network/*.cpp utils/*.cpp main.cpp -lws2_32 -o integration
 #./integration

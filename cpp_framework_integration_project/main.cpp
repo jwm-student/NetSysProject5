@@ -20,7 +20,7 @@ std::string SERVER_ADDR = "netsys.ewi.utwente.nl"; //"127.0.0.1"
 // The port to connect to. 8954 for the simulation server
 int SERVER_PORT = 8954;
 // The frequency to connect on.
-int FREQUENCY = 8090;//TODO: Set this to your group frequency!
+int FREQUENCY = 8000;//TODO: Set this to your group frequency!
 // The token you received for your frequency range
 std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
@@ -73,9 +73,7 @@ int main() {
 	thread routingTableSender(std::bind(&DVR::sendUpdatedTable, &DVR, std::ref(routingTable), std::ref(sendRoutingTable)));
 	//std::ref(sendRoutingTable)
 
-	unsigned int my_addr_int = my_addr - '0';
-	std::cout << "My address is: " << my_addr_int << std::endl;
-	routingTable[my_addr_int][my_addr_int] = 0;
+	routingTable[my_addr][my_addr] = 0;
 	
 	//Handle messages from the server / audio framework
 	while(true){
