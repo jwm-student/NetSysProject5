@@ -238,7 +238,7 @@ vector<Message> PacketGenerator::generateSingleDataPacket(std::string input, int
 	return output;
 }
 
-vector<Message> PacketGenerator::generatePingPacket(Client* client){
+vector<Message> PacketGenerator::generatePingPacket(){
     vector<Message> output;
 
     // Set first 2 bits to be the source address
@@ -264,7 +264,7 @@ vector<Message> PacketGenerator::generatePingPacket(Client* client){
 	return output;
 }
 
-vector<Message> PacketGenerator::generateRoutingPacket(vector<char> sendingTable, Client* client){
+vector<Message> PacketGenerator::generateRoutingPacket(vector<char> sendingTable){
     vector<Message> output;
 	// Vector for padding
 	vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
