@@ -14,18 +14,18 @@ private:
 	Message TypeMessage;
 	int seqNum;
 	int expSeqNum;
-	char myAddr;
+	int myAddr;
 
 	int openSocket();
 
 public:
-	Client(string server_addr, char myAddr, int server_port,  int frequency, string token, BlockingQueue< Message > *senderQueue, BlockingQueue< Message > *receiverQueue);
+	Client(string server_addr, int myAddr, int server_port,  int frequency, string token, BlockingQueue< Message > *senderQueue, BlockingQueue< Message > *receiverQueue);
 
 	void startThread();
 	void listener(int sock);
-	void setMyAddr(char newAddr);
-	char getMyAddr();
-	void readInput(BlockingQueue< Message >*senderQueue, char addr);
+	void setMyAddr(int newAddr);
+	int getMyAddr();
+	void readInput(BlockingQueue< Message >*senderQueue, int addr);
 	int getSeqNum();
 	void setSeqNum(int seqNum);
 	void increaseSeqNum();

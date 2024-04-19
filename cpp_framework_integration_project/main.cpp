@@ -6,6 +6,7 @@
 #include <chrono>
 #include <functional>
 
+#include "utils/TUI.h"
 #include "utils/BlockingQueue.h"
 #include "network/Client.h"
 #include "utils/Message.h"
@@ -13,40 +14,27 @@
 #include "network/PacketGenerator.hpp"
 #include "network/PacketProcessor.hpp"
 
-/**
-* This is just some example code to show you how to interact 
-* with the server using the provided client and two queues.
-* Feel free to modify this code in any way you like!
-*/
-
 // The address to connect to. Set this to localhost to use the audio interface tool.
 std::string SERVER_ADDR = "netsys.ewi.utwente.nl"; //"127.0.0.1"
 // The port to connect to. 8954 for the simulation server
 int SERVER_PORT = 8954;
 // The frequency to connect on.
-int FREQUENCY = 8010;//TODO: Set this to your group frequency!
+int FREQUENCY = 8090;//TODO: Set this to your group frequency!
 // The token you received for your frequency range
 std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
 
 using namespace std;
 
-void readInput(BlockingQueue< Message >*senderQueue, char addr, CollisionAvoidance* AC, Client* client, PacketGenerator* packetGenerator) {
-while (true) {
+void readInput(TUI *tui) {
+	while (true) {
+		cout << "Enter your command: " << endl;
 		string input;
-		std::cout << "Enter your message: " << std::endl;
-		getline(cin, input); //read input from stdin
-		if(input.size() < 16*30){
-			vector<Message> packets = packetGenerator->generatePackets(input, client);
-			//Send message using CA
-			AC->sendMessageCA(packets, senderQueue);
-		}
-		else{
-			std::cout << "Message too long, please write a shorter message!" << std::endl;
-		}
+		getline(cin, input);
+		tui->processInput(input);
 	}
 }
-void sendUpdatedTable(vector<vector<int>>& routingTable, PacketGenerator* PacketGenerator, Client* client,CollisionAvoidance* AC,BlockingQueue< Message >*senderQueue, bool& sendRoutingTable){
+void sendUpdatedTable(vector<vector<int>>& routingTable, PacketGenerator* packetGenerator, Client* client,CollisionAvoidance* AC,BlockingQueue< Message >*senderQueue, bool& sendRoutingTable){
 	// This function can be called when a local routingtable has been updated
 	// It sends the table to all neighbours, so that they can update theirs
 	// It counts the width and height of the table, adds this to the first two bytes of data
@@ -82,10 +70,10 @@ void sendUpdatedTable(vector<vector<int>>& routingTable, PacketGenerator* Packet
 			}
 
 			std::cout << "size of the sendingtable is: " << sendingTable.size() << std::endl;
-			vector<Message> routingVector = PacketGenerator->generateRoutingPacket(sendingTable,client);
+			vector<Message> routingVector = packetGenerator->generateRoutingPacket(sendingTable,client);
 			Message sendMessage;
 			sendMessage = routingVector[0];
-			AC->sendMessageCA(routingVector, senderQueue);
+			AC->sendMessageCA(routingVector);
 			std::cout << std::endl << "Table sent!" << std::endl;
 			sendRoutingTable = false;
 		}
@@ -207,44 +195,34 @@ bool routingMessageHandler(Message temp, vector<vector<int>>& routingTable, Pack
 void sendPing(BlockingQueue< Message >*senderQueue, Client* client, PacketGenerator* packetGenerator, CollisionAvoidance* AC){
 	Message sendMessage;
 	vector<Message> pingVector = packetGenerator->generatePingPacket(client);
-	AC->sendMessageCA(pingVector, senderQueue);
+	AC->sendMessageCA(pingVector);
 	std::cout << std::endl << "Sent the first ping message!" << std::endl;
 }
 
 
 int main() {
 	BlockingQueue< Message > receiverQueue; // Queue messages will arrive in
-	BlockingQueue< Message > senderQueue; // Queue for data to transmit
-	PacketGenerator packetGenerator;
-	
+	BlockingQueue< Message > senderQueue; // Queue for data to transmit	
 
 	// Ask for address input. Should be between 0, 1, 2 or 3
 	std::cout << "Please enter an address for this client (0, 1, 2 or 3)" << std::endl;
 	bool input_valid = false;
 	string addrInput;
-	char my_addr = '4'; // initialized to wrong value so it has to be changed.
-
+	int my_addr = 4; // initialized to wrong value so it has to be changed.
+	
 	// DVR variables
 	bool tableConverged = false;
 	bool sendRoutingTable = false;
 	vector<vector<int>> routingTable = {{99, 99, 99, 99}, {99, 99, 99, 99}, {99, 99, 99, 99},{99, 99, 99, 99}};
 
-	// Loop until valid input
-	while(!input_valid){
-		getline(cin,addrInput);
-		my_addr = addrInput.at(0);
-		if(my_addr == '0' || my_addr == '1' || my_addr == '2' || my_addr == '3'){
-			input_valid = true;
-		}
-		else{
-			std::cout << "Invalid input, please enter 0, 1, 2 or 3." << addrInput <<std::endl;
-		}
-	}
-
-
+	//Initializing classes.
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
-	CollisionAvoidance collisionAvoidance;
+	CollisionAvoidance collisionAvoidance(&senderQueue);
+	PacketGenerator packetGenerator(&client);
+	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance);
 	
+	client.setMyAddr(tui.setDestinationAddress()); // set address to input of user
+
 	client.startThread();
 	
 	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client);
@@ -252,7 +230,7 @@ int main() {
 	// Sends the first discovery ping
 	sendPing(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
-	thread inputHandler(readInput, &senderQueue, client.getMyAddr(), &collisionAvoidance, &client, &packetGenerator);
+	thread inputHandler(readInput, &tui);
 	thread routingTableSender(sendUpdatedTable, std::ref(routingTable), &packetGenerator, &client, &collisionAvoidance, &senderQueue, std::ref(sendRoutingTable));
 	
 	// Handle messages from the server / audio framework
@@ -264,10 +242,11 @@ int main() {
 
 		// Go into the InitializeDVR state if table is not yet converged
 		// if (tableConverged == false AND routingBit == 1)
-		if (tableConverged == false){
-			sendRoutingTable = routingMessageHandler(temp, routingTable, &packetGenerator, &client, &collisionAvoidance, &senderQueue);
-			// ADD TIMEOUT FOR TABLECONVERGENCE
-		}
+		//cout << "Table converged = " << tableConverged << endl;
+		// if (tableConverged == false){
+		// 	sendRoutingTable = routingMessageHandler(temp, routingTable, &packetGenerator, &client, &collisionAvoidance, &senderQueue);
+		// 	// ADD TIMEOUT FOR TABLECONVERGENCE
+		// }
 
 		switch (temp.type) {
 		case DATA: {// We received a data frame!
@@ -293,8 +272,6 @@ int main() {
 				std::cout << c << ",";
 			}
 			if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
-
-			
 				bitset<8> shortReceived(temp.data[0]);
 				bitset<8> shortReceivedScnd(temp.data[1]);
 				std::cout << "First bit of ACK received: " << shortReceived << std::endl;
