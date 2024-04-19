@@ -66,3 +66,11 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
         }
     }
 }
+void PacketProcessor::processAckPacket(Message incomingAckMessage){
+    //Er vanuitgaand dat seqnum opzelfde plek zit als bij DATA.
+    int receivedSeqNum = (incomingAckMessage.data[1] & 0b00000111);
+
+    if(receivedSeqNum == client->getExpSeqNum()){
+        
+    }
+}
