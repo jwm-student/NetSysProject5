@@ -10,6 +10,9 @@
 #include <vector>
 #include <string>
 
+#ifndef PACKETGENERATOR_HPP
+#define PACKETGENERATOR_HPP
+
 class PacketGenerator {
     private:
         Client* client;
