@@ -43,6 +43,26 @@ int TUI::setDestinationAddress(){
     return dest_addr;
 }
 
+int TUI::setMyAddress(){
+	bool input_valid = false;
+	string addrInput;
+	int dest_addr = -1; // initialized to wrong value so it has to be changed.
+
+    cout << "Please enter your own address" << endl;
+	// Loop until valid input
+	while(!input_valid){
+		getline(cin,addrInput);
+		if(addrInput == "0" || addrInput == "1" || addrInput == "2" || addrInput == "3"){
+			input_valid = true;
+		}
+		else{
+			cout << "Invalid input, please enter 0, 1, 2 or 3." << addrInput <<endl;
+		}
+	}
+    dest_addr = int(addrInput.at(0) - '0');
+    return dest_addr;
+}
+
 void TUI::processInput(std::string input){
     if(input.size() > 2 || input.size() <= 1){
         cout << "Invalid command. Type '-H' to see the list of available commands" << endl;

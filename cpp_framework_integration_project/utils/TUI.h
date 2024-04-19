@@ -23,6 +23,7 @@ class TUI {
         void printMenu();
         void printReachableNodes();
         void processInput(std::string input);
+        int setMyAddress();
 };
 
 #endif //TUI_H

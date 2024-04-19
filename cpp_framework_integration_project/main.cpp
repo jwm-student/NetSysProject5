@@ -41,12 +41,7 @@ int main() {
 	BlockingQueue< Message > receiverQueue; // Queue messages will arrive in
 	BlockingQueue< Message > senderQueue; // Queue for data to transmit	
 
-	// Ask for address input. Should be between 0, 1, 2 or 3
-	std::cout << "Please enter an address for this client (0, 1, 2 or 3)" << std::endl;
-	bool input_valid = false;
-	string addrInput;
-	int my_addr = 4; // initialized to wrong value so it has to be changed.
-	
+	int my_addr = -1;
 	// DVR variables
 	bool tableConverged = false;
 	bool sendRoutingTable = false;
@@ -58,14 +53,12 @@ int main() {
 	PacketGenerator packetGenerator(&client);
 	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance);
 	
-	client.setMyAddr(tui.setDestinationAddress()); // set address to input of user
-
 	client.startThread();
 	
-
 	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client);
 	
 	DVR DVR(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
+	client.setMyAddr(tui.setMyAddress()); // Set correct address of TUI.
 	// Sends the first discovery ping
 	DVR.sendPing();
 
@@ -73,9 +66,8 @@ int main() {
 	thread routingTableSender(std::bind(&DVR::sendUpdatedTable, &DVR, std::ref(routingTable), std::ref(sendRoutingTable)));
 	//std::ref(sendRoutingTable)
 
-	unsigned int my_addr_int = my_addr - '0';
-	std::cout << "My address is: " << my_addr_int << std::endl;
-	routingTable[my_addr_int][my_addr_int] = 0;
+	std::cout << "My address is: " << client.getMyAddr() << std::endl;
+	routingTable[client.getMyAddr()][client.getMyAddr()] = 0;
 	
 	//Handle messages from the server / audio framework
 	while(true){
