@@ -110,7 +110,7 @@ int main() {
 			sendRoutingTable = DVR.routingMessageHandler(temp, routingTable);
 			// ADD TIMEOUT FOR TABLECONVERGENCE
 		}
-
+		
 		switch (temp.type) {
 		case DATA: {// We received a data frame!
 			std::cout << "DATA: ";
