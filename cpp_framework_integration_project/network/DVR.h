@@ -1,3 +1,7 @@
+#ifndef DVR_HPP
+#define DVR_HPP
+
+
 #include "../utils/BlockingQueue.h"
 #include "../utils/Message.h"
 #include "../utils/MessageType.h"
@@ -10,6 +14,7 @@
 #include <vector>
 #include <bitset>
 #include <chrono>
+
 
 class DVR {
     private:
@@ -26,3 +31,5 @@ class DVR {
         void timerChecker(vector<vector<int>>& routingTable, bool& sendRoutingTable);
         void resetTimer(int incomingSourceAddress);
 };
+
+#endif // DVR_HPP

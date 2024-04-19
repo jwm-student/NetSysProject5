@@ -25,7 +25,7 @@ DVR::DVR(BlockingQueue< Message >*senderQueue, Client* client, PacketGenerator* 
 
 void DVR::sendPing(){
     Message sendMessage;
-    vector<Message> pingVector = packetGenerator->generatePingPacket(client);
+    vector<Message> pingVector = packetGenerator->generatePingPacket();
     AC->sendMessageCA(pingVector);
 }
 
@@ -174,7 +174,7 @@ void DVR::sendUpdatedTable(vector<vector<int>>& routingTable, bool& sendRoutingT
 			}
 
 			std::cout << "size of the sendingtable is: " << sendingTable.size() << std::endl;
-			vector<Message> routingVector = packetGenerator->generateRoutingPacket(sendingTable,client);
+			vector<Message> routingVector = packetGenerator->generateRoutingPacket(sendingTable);
 			Message sendMessage;
 			sendMessage = routingVector[0];
 			AC->sendMessageCA(routingVector);

@@ -15,7 +15,6 @@ private:
 	int seqNum;
 	int expSeqNum;
 	int myAddr;
-
 	int openSocket();
 
 public:

@@ -64,15 +64,15 @@ int main() {
 
 	client.startThread();
 	
-	DVR DVR(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
+	DVR dvr(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
-	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client);
+	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client, &dvr);
 	// Sends the first discovery ping
-	DVR.sendPing();
+	dvr.sendPing();
 
 	thread inputHandler(readInput, &tui);
-	thread routingTableSender(std::bind(&DVR::sendUpdatedTable, &DVR, std::ref(routingTable), std::ref(sendRoutingTable)));
-	thread timerChecker(std::bind(&DVR::timerChecker, &DVR, std::ref(routingTable), std::ref(sendRoutingTable)));
+	thread routingTableSender(std::bind(&DVR::sendUpdatedTable, &dvr, std::ref(routingTable), std::ref(sendRoutingTable)));
+	thread timerChecker(std::bind(&DVR::timerChecker, &dvr, std::ref(routingTable), std::ref(sendRoutingTable)));
 
 
 	routingTable[client.getMyAddr()][client.getMyAddr()] = 0;
@@ -99,7 +99,7 @@ int main() {
 				}
 			}
 			if (receiverQueue.isempty() == false){
-				sendRoutingTable = DVR.routingMessageHandler(temp, routingTable);
+				sendRoutingTable = dvr.routingMessageHandler(temp, routingTable);
 				start = chrono::steady_clock::now();
 			}
 		}
