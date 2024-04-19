@@ -14,6 +14,7 @@ class TUI {
         Client *client;
         PacketGenerator *packetGenerator;
         CollisionAvoidance *collisionAvoidance;
+        vector<vector<int>>* routingTable;
 
         char my_addr;
 

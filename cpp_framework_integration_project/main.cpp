@@ -41,10 +41,6 @@ int main() {
 	BlockingQueue< Message > receiverQueue; // Queue messages will arrive in
 	BlockingQueue< Message > senderQueue; // Queue for data to transmit	
 
-	// Ask for address input. Should be between 0, 1, 2 or 3
-	std::cout << "Please enter an address for this client (0, 1, 2 or 3)" << std::endl;
-	bool input_valid = false;
-	string addrInput;
 	int my_addr = -1; // initialized to wrong value so it has to be changed.
 	
 	// DVR variables
@@ -56,7 +52,7 @@ int main() {
 	//Initializing classes.
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
 	CollisionAvoidance collisionAvoidance(&senderQueue);
-	PacketGenerator packetGenerator(&client);
+	PacketGenerator packetGenerator(&client,&routingTable);
 	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance);
 	
 
@@ -70,7 +66,7 @@ int main() {
 	
 	DVR DVR(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
-	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client);
+	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client, &routingTable);
 	// Sends the first discovery ping
 	DVR.sendPing();
 

@@ -21,6 +21,7 @@ TUI::TUI(Client* client, PacketGenerator *packetGenerator, CollisionAvoidance *c
     this->client = client;
     this->packetGenerator = packetGenerator;
     this->collisionAvoidance = collisionAvoidance;
+    this->routingTable = routingTable;
 }
 
 int TUI::setDestinationAddress(){
@@ -77,6 +78,7 @@ void TUI::processInput(std::string input){
             cout << "Sending your message to " << destAddr << endl;
             // Give input to network layer
             vector<Message> packets = packetGenerator->generatePackets(messageContent,destAddr);
+            
 			//Send message via Collision Avoidance
 			collisionAvoidance->sendMessageCA(packets);
         }
@@ -106,7 +108,17 @@ void TUI::printMenu(){
 }
 
 void TUI::printReachableNodes(){
-    cout << "This function still has to be written. " << endl;
+    const std::vector<std::vector<int>>& vec = *routingTable;
+    cout << "Nodes that are reachable: \n" << endl;
+    for(int i = 0; i < 4; i++){
+        for(int j = 0; i < 4; j++){
+            if(vec[i][j] < 99){
+                cout << i << endl;
+                break; 
+            }
+        }
+    }
 }
+
 
 //TO-DO Implement choosing own address function

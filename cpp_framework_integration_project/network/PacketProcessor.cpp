@@ -15,22 +15,23 @@
 
 #include "PacketProcessor.hpp"
 
-PacketProcessor::PacketProcessor(PacketGenerator* PG, CollisionAvoidance* CA, Client *client){
+PacketProcessor::PacketProcessor(PacketGenerator* PG, CollisionAvoidance* CA, Client *client, vector<vector<int>>* routingTable){
     this->PG = PG;
     this->CA = CA;
     this->client = client;
+    this->routingTable = routingTable;
     //this->DVR = DVR;
     this->buffer = {};
-    cout << "packetprocessor initiated, buffer.size() = " << buffer.size() << endl;
 }
 
 void PacketProcessor::processDataPacket(Message incomingMessage){
     int destAddress = (incomingMessage.data[0] & 0b00110000) >> 4;
     int srcAddress = (incomingMessage.data[0] & 0b11000000) >> 6;
+    int nextHop = (incomingMessage.data[1] & 0b00011000) >> 3;
     cout << "processing data, dest addres = " << destAddress << ", srcaddress = " << srcAddress << ", Buffer size" << buffer.size() << endl;
 //    DVR.resetTimer(srcAddress);
-    if(buffer.size()== 0){
-        if(destAddress == client->getMyAddr()){
+
+    if(buffer.size()== 0 && (destAddress == client->getMyAddr())){
             if((incomingMessage.data[1] & 0b01000000) == 0b01000000){ // if the message is part of longer message
                 cout << "message is longer than 1 packet!" << endl;
                 sendingSrc = srcAddress;
@@ -62,17 +63,8 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
                 CA->setReceivedMessageType(FREE); //TO-DO: Solve less hacky
                 CA->sendMessageCA(ack); // send ack
             }
-        } 
-        // else if(){ //else if nextHop is me, perform this code and send the message to the new dest
 
-        // }
-        
-        else {
-            //received Message, but not for me.
-            printf("received message! But not for me ");
-        }
-
-    } else if(buffer.size() != 0){
+    } else if(buffer.size() != 0 && (destAddress == client->getMyAddr())){
         cout << "received another message, buffer is non-zero!" << endl;
         // If I'm the destination and the sender is the same sender as before.
         if((destAddress == client->getMyAddr()) && (srcAddress == sendingSrc)){
@@ -91,4 +83,16 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
             }
         }
     }
+    // If I'm not the destination, check if I'm the nextHop.
+    else if (nextHop == client->getMyAddr())
+    {
+        printf("I am the next hop, going to forward!");
+        // New next hop is found, send same packet with new nextHop
+        vector<Message> forwardMessage = PG->generateNextHopPacketVec(incomingMessage,destAddress);
+        CA->sendMessageCA(forwardMessage);
+    }
+    else{
+        printf("Received a packet but I got nothing to do with it!");
+    }
+    
 }

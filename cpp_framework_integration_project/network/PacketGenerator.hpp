@@ -13,9 +13,11 @@
 class PacketGenerator {
     private:
         Client* client;
+        vector<vector<int>>* routingTable;
+
 
     public:
-	    PacketGenerator(Client* client);
+	    PacketGenerator(Client* client, vector<vector<int>>* routingTable);
         vector<Message> generatePackets(std::string input);
         vector<Message> generatePackets(std::string input, int destAddr);
 
@@ -26,5 +28,9 @@ class PacketGenerator {
         vector<Message> generateSingleDataPacket(std::string input, int destAddr);
         vector<Message> generatePingPacket(Client* client);
         vector<Message> generateRoutingPacket(vector<char> sendingTable, Client* client);
+        Message generateNextHopPacket(Message message, int destAddr);
+        vector<Message> generateNextHopPacketVec(Message message, int destAddr);
+        int findNextHop(int destAddr);
+
 };
 #endif // PACKET_GENERATOR_HPP

@@ -15,8 +15,9 @@
 
 #include "PacketGenerator.hpp"
 
-PacketGenerator::PacketGenerator(Client* client){
+PacketGenerator::PacketGenerator(Client* client, vector<vector<int>>* routingTable){
     this->client = client;
+    this->routingTable = routingTable;
 }
 
 vector<Message> PacketGenerator::generatePackets(std::string input){
@@ -33,10 +34,24 @@ vector<Message> PacketGenerator::generatePackets(std::string input){
 vector<Message> PacketGenerator::generatePackets(std::string input, int destAddr){
     vector<Message> output;
     if(input.size() > 30){
-        output = generateMultiPacket(input, destAddr);
+        if(destAddr != findNextHop(destAddr)){ // If it is not a direct neighbour, make sure nextHop is added
+            vector<Message> notYetOutput = generateMultiPacket(input, destAddr);
+            for(auto m : notYetOutput){
+                output.push_back(generateNextHopPacket(m,destAddr)); // Change each message to message with nexthop
+            }
+        }
+        else{
+            output = generateMultiPacket(input,destAddr);
+        }
     }
     else{
-        output = generateSingleDataPacket(input, destAddr);
+        if(destAddr != findNextHop(destAddr)){ // If it is not a direct neighbour, make sure nextHop is added
+            vector<Message> notYetOutput = generateSingleDataPacket(input, destAddr);
+            output.push_back(generateNextHopPacket(notYetOutput[0],destAddr)); // Change each message to message with nexthop
+        }
+        else{
+            output = generateSingleDataPacket(input, destAddr);
+        }
     }
     return output;
 }
@@ -77,7 +92,7 @@ vector<Message> PacketGenerator::generateMultiPacket(std::string input){
 	vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
 
 	/// Add header
-	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	int senderAddress = client->getMyAddr(); // This gives the true integer value (0, 1, 2 or 3)
 	// Set first 2 bits to be the source address
 	int firstByte = senderAddress << 6; 
 
@@ -126,7 +141,7 @@ vector<Message> PacketGenerator::generateMultiPacket(std::string input, int dest
 	vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
 
 	/// Add header
-	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	int senderAddress = client->getMyAddr(); // This gives the true integer value (0, 1, 2 or 3)
 	// Set first 2 bits to be the source address
 	int firstByte = senderAddress << 6; 
 
@@ -175,7 +190,7 @@ vector<Message> PacketGenerator::generateSingleDataPacket(std::string input){
 	vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
 
 	/// Add header
-	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	int senderAddress = client->getMyAddr(); // This gives the true integer value (0, 1, 2 or 3)
 	// Set first 2 bits to be the source address
 	int firstByte = senderAddress << 6; 
 
@@ -210,7 +225,7 @@ vector<Message> PacketGenerator::generateSingleDataPacket(std::string input, int
 	vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
 
 	/// Add header
-	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	int senderAddress = client->getMyAddr(); // This gives the true integer value (0, 1, 2 or 3)
 	// Set first 2 bits to be the source address
 	int firstByte = senderAddress << 6; 
 
@@ -270,7 +285,7 @@ vector<Message> PacketGenerator::generateRoutingPacket(vector<char> sendingTable
 	vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
 
 	/// Add header
-	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	int senderAddress = client->getMyAddr(); // This gives the true integer value (0, 1, 2 or 3)
 	// Set first 2 bits to be the source address
 	int firstByte = senderAddress << 6; 
 
@@ -297,4 +312,39 @@ vector<Message> PacketGenerator::generateRoutingPacket(vector<char> sendingTable
         output.push_back(sendMessage);
     }
 	return output;
+}
+
+Message PacketGenerator::generateNextHopPacket(Message message, int destAddr){
+    vector<char> data = message.data;
+    int nextHop = findNextHop(destAddr);
+    char secondByte = data[1];
+    int leftThreeBits = secondByte & 0b11100000;
+    int rightThreeBits = secondByte & 0b00000111;
+    int newSecondByte = 0b00000000;
+    newSecondByte = newSecondByte | leftThreeBits;
+    newSecondByte = newSecondByte | rightThreeBits;
+    newSecondByte = newSecondByte | (nextHop << 3);
+    message.data[1] = newSecondByte;
+    return message;
+};
+
+vector<Message> PacketGenerator::generateNextHopPacketVec(Message message, int destAddr){
+    Message newMessage = generateNextHopPacket(message, destAddr);
+    vector<Message> output;
+    output.push_back(newMessage);
+    return output;
+};
+
+int PacketGenerator::findNextHop(int destAddr){
+    int result = 99;
+    const std::vector<std::vector<int>>& vec = *routingTable;
+    for(int i = 0; i < 4; i++){
+        if(vec[destAddr][i] < result){ // Choose smallest neighbour id
+            result = i;
+        }
+    }
+    if(result >= 4){
+        printf("this node is unreachable!");
+    }
+    return result;
 }
