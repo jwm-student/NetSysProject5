@@ -3,6 +3,7 @@
 #include "../utils/MessageType.h"
 #include "PacketGenerator.hpp"
 #include "CollisionAvoidance.h"
+//#include "DVR.h"
 
 #ifndef PACKET_PROCESSOR_H
 #define PACKET_PROCESSOR_H
@@ -12,6 +13,7 @@ class PacketProcessor {
         PacketGenerator *PG;
         CollisionAvoidance *CA;
         Client *client;
+        //DVR *DVR;
         vector<char> buffer;
         int sendingSrc;
 

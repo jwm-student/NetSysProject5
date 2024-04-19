@@ -45,7 +45,7 @@ int main() {
 	std::cout << "Please enter an address for this client (0, 1, 2 or 3)" << std::endl;
 	bool input_valid = false;
 	string addrInput;
-	int my_addr = 4; // initialized to wrong value so it has to be changed.
+	int my_addr = -1; // initialized to wrong value so it has to be changed.
 	
 	// DVR variables
 	bool tableConverged = false;
@@ -59,22 +59,24 @@ int main() {
 	PacketGenerator packetGenerator(&client);
 	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance);
 	
+
 	client.setMyAddr(tui.setDestinationAddress()); // set address to input of user
 
 	client.startThread();
 	
+	DVR DVR(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
 	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client);
-	
-	DVR DVR(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 	// Sends the first discovery ping
 	DVR.sendPing();
 
 	thread inputHandler(readInput, &tui);
 	thread routingTableSender(std::bind(&DVR::sendUpdatedTable, &DVR, std::ref(routingTable), std::ref(sendRoutingTable)));
-	//std::ref(sendRoutingTable)
+	thread timerChecker(std::bind(&DVR::timerChecker, &DVR, std::ref(routingTable), std::ref(sendRoutingTable)));
 
-	routingTable[my_addr][my_addr] = 0;
+
+	routingTable[client.getMyAddr()][client.getMyAddr()] = 0;
+	cout << "Constructed routingSender Thread" << endl;
 	chrono::steady_clock::time_point start = chrono::steady_clock::now();
 	
 	//Handle messages from the server / audio framework
@@ -98,19 +100,17 @@ int main() {
 			}
 			if (receiverQueue.isempty() == false){
 				sendRoutingTable = DVR.routingMessageHandler(temp, routingTable);
-				chrono::steady_clock::time_point start = chrono::steady_clock::now();
+				start = chrono::steady_clock::now();
 			}
-
-			// ADD TIMEOUT FOR TABLECONVERGENCE
 		}
 
 		
 		switch (temp.type) {
 		case DATA: {// We received a data frame!
-			std::cout << "DATA: ";
-			for (char c : temp.data) {
-				std::cout << c << ",";
-			}
+			// std::cout << "DATA: ";
+			// for (char c : temp.data) {
+			// 	std::cout << c << ",";
+			// }
 			PP.processDataPacket(temp);
 			// if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
 			// 	vector<Message> ackVector = packetGenerator.generateAckPacket((temp.data[1] & 0b111),&client,((temp.data[0] & 0b11000000) >> 6));

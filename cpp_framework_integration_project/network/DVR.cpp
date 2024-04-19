@@ -185,3 +185,37 @@ void DVR::sendUpdatedTable(vector<vector<int>>& routingTable, bool& sendRoutingT
 	}
 
 }
+
+void DVR::timerChecker(vector<vector<int>> &routingTable, bool& sendRoutingTable){
+	chrono::milliseconds TTL(30000);
+
+	// Check if any timers have expired
+	while(true){
+		for(int i=0; i < TTLvec.size(); i++){
+			if (chrono::steady_clock::now() - TTLvec[i] >= TTL){
+				// If my timer expires
+				if (i == client->getMyAddr()){
+					sendPing();
+				}
+				// If someoe else's timer expires
+				else{
+					//remove them from the routing table
+					for (int k = 0; k < 4; k++){
+						for (int j = 0; j < 4; j++){
+							if (k == i || j == i){
+								routingTable[k][j] = 99;
+							}
+						}
+					}
+					// Send out updated table
+					sendRoutingTable = true;
+				}
+			}
+		}
+	}
+}
+
+void DVR::resetTimer(int incomingSourceAddress){
+	// Reset a node timer in the TTL vector
+	TTLvec[incomingSourceAddress] = chrono::steady_clock::now();
+}

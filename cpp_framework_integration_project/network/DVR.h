@@ -17,9 +17,12 @@ class DVR {
         Client* client;
         PacketGenerator* packetGenerator;
         CollisionAvoidance* AC;
+        vector<chrono::steady_clock::time_point> TTLvec;
     public:
         DVR(BlockingQueue< Message >*senderQueue, Client* client, PacketGenerator* packetGenerator, CollisionAvoidance* AC);
         void sendPing();
         bool routingMessageHandler(Message temp, vector<vector<int>>& routingTable);
         void sendUpdatedTable(vector<vector<int>>& routingTable, bool& sendRoutingTable);
+        void timerChecker(vector<vector<int>>& routingTable, bool& sendRoutingTable);
+        void resetTimer(int incomingSourceAddress);
 };
