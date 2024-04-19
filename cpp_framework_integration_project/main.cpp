@@ -51,6 +51,7 @@ int main() {
 	bool tableConverged = false;
 	bool sendRoutingTable = false;
 	vector<vector<int>> routingTable = {{99, 99, 99, 99}, {99, 99, 99, 99}, {99, 99, 99, 99},{99, 99, 99, 99}};
+	chrono::milliseconds routingTimeout(10000);
 
 	//Initializing classes.
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
@@ -74,6 +75,7 @@ int main() {
 	//std::ref(sendRoutingTable)
 
 	routingTable[my_addr][my_addr] = 0;
+	chrono::steady_clock::time_point start = chrono::steady_clock::now();
 	
 	//Handle messages from the server / audio framework
 	while(true){
@@ -84,10 +86,24 @@ int main() {
 
 		// Go into the InitializeDVR state if table is not yet converged
 		// if (tableConverged == false AND routingBit == 1)
+		
 		if (tableConverged == false){
-			sendRoutingTable = DVR.routingMessageHandler(temp, routingTable);
+			std::cout << "entered tableConverged" << std::endl;
+			while (receiverQueue.isempty() == true){
+				if (chrono::steady_clock::now() - start >= routingTimeout){
+					tableConverged = true;
+					std::cout << "tableConverged timed out!" << std::endl;
+					break;
+				}
+			}
+			if (receiverQueue.isempty() == false){
+				sendRoutingTable = DVR.routingMessageHandler(temp, routingTable);
+				chrono::steady_clock::time_point start = chrono::steady_clock::now();
+			}
+
 			// ADD TIMEOUT FOR TABLECONVERGENCE
 		}
+
 		
 		switch (temp.type) {
 		case DATA: {// We received a data frame!

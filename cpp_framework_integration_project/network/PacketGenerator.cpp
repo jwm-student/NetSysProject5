@@ -45,7 +45,7 @@ vector<Message> PacketGenerator::generateAckPacket(int seqNum, int destAddr){
     vector<Message> output;
 
     // Set first 2 bits to be the source address
-	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	int senderAddress = client->getMyAddr(); // This gives the true integer value (0, 1, 2 or 3)
 	int firstByte = senderAddress << 6; 
     bitset<8> sendAddr(senderAddress);
     std::cout << "Sender address in bits: " << sendAddr << std::endl;
