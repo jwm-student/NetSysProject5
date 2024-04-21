@@ -66,7 +66,7 @@ int main() {
 	
 	DVR DVR(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
-	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client);
+	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client, &DVR);
 	// Sends the first discovery ping
 	DVR.sendPing();
 
