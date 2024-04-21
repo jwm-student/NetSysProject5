@@ -28,7 +28,7 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
     int destAddress = (incomingMessage.data[0] & 0b00110000) >> 4;
     int srcAddress = (incomingMessage.data[0] & 0b11000000) >> 6;
     cout << "processing data, dest addres = " << destAddress << ", srcaddress = " << srcAddress << ", Buffer size" << buffer.size() << endl;
-    dvr->resetTimer(srcAddress);
+    //dvr->resetTimer(srcAddress);
     if(buffer.size()== 0){
         if(destAddress == client->getMyAddr()){
             if((incomingMessage.data[1] & 0b01000000) == 0b01000000){ // if the message is part of longer message

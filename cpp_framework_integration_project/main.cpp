@@ -59,20 +59,20 @@ int main() {
 	PacketGenerator packetGenerator(&client);
 	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance);
 	
-
-	client.setMyAddr(tui.setDestinationAddress()); // set address to input of user
-
 	client.startThread();
 	
 	DVR DVR(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
 	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client, &DVR);
+
+	client.setMyAddr(tui.setDestinationAddress()); // set address to input of user
+
 	// Sends the first discovery ping
 	DVR.sendPing();
 
 	thread inputHandler(readInput, &tui);
 	thread routingTableSender(std::bind(&DVR::sendUpdatedTable, &DVR, std::ref(routingTable), std::ref(sendRoutingTable)));
-	thread timerChecker(std::bind(&DVR::timerChecker, &DVR, std::ref(routingTable), std::ref(sendRoutingTable)));
+	//thread timerChecker(std::bind(&DVR::timerChecker, &DVR, std::ref(routingTable), std::ref(sendRoutingTable)));
 
 
 	routingTable[client.getMyAddr()][client.getMyAddr()] = 0;

@@ -6,4 +6,6 @@
     - Functie voor het handlen van korte discovery en lange routingtable berichten
 
 - Nieuwe ping message kunnen ontvangen en toevoegen aan de table
-- Table resetten na timeout, 
+- Table resetten na timeout
+
+Table does not get updated for people other than neighbors
