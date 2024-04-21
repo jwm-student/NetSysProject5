@@ -60,13 +60,14 @@ int main() {
 	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance);
 	
 
-	client.setMyAddr(tui.setDestinationAddress()); // set address to input of user
+	 // set address to input of user
 
 	client.startThread();
 	
 	DVR DVR(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
 	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client, &DVR);
+	client.setMyAddr(tui.setDestinationAddress());
 	// Sends the first discovery ping
 	DVR.sendPing();
 

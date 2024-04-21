@@ -1,3 +1,6 @@
+#ifndef DVR_H
+#define DVR_H
+
 #include "../utils/BlockingQueue.h"
 #include "../utils/Message.h"
 #include "../utils/MessageType.h"
@@ -26,3 +29,4 @@ class DVR {
         void timerChecker(vector<vector<int>>& routingTable, bool& sendRoutingTable);
         void resetTimer(int incomingSourceAddress);
 };
+#endif
