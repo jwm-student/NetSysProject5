@@ -101,3 +101,14 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
         printf("Received a packet but I got nothing to do with it!");
     }
 }
+
+void PacketProcessor::processAckPacket(Message message){
+    int recSeqNum = message.data[1] & 0b00000111;
+    if(recSeqNum == client->getExpSeqNum()){
+        client->receivedACK = TRUE;
+        cout << "receivedACK is set to true" << endl;
+    }
+    else{
+        client->receivedACK = FALSE;
+    }
+}

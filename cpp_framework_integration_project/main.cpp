@@ -49,7 +49,7 @@ int main() {
 
 	//Initializing classes.
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
-	CollisionAvoidance collisionAvoidance(&senderQueue);
+	CollisionAvoidance collisionAvoidance(&senderQueue, &client);
 	PacketGenerator packetGenerator(&client,&routingTable);
 	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance, &routingTable);
 	

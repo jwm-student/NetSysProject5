@@ -15,12 +15,13 @@ private:
 	int seqNum;
 	int expSeqNum;
 	int myAddr;
+	
 
 	int openSocket();
 
 public:
 	Client(string server_addr, int myAddr, int server_port,  int frequency, string token, BlockingQueue< Message > *senderQueue, BlockingQueue< Message > *receiverQueue);
-
+	bool receivedACK;
 	void startThread();
 	void listener(int sock);
 	void setMyAddr(int newAddr);

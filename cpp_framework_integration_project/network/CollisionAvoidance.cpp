@@ -15,8 +15,9 @@
 #include "CollisionAvoidance.h"
 
 using namespace std;
-CollisionAvoidance::CollisionAvoidance(BlockingQueue< Message > *senderQueue){
+CollisionAvoidance::CollisionAvoidance(BlockingQueue< Message > *senderQueue, Client* client){
     this->senderQueue = senderQueue;
+    this->client = client;
 }
 
 MessageType CollisionAvoidance::getReceivedMessageType(){
@@ -38,17 +39,24 @@ bool CollisionAvoidance::queueIsBusy(MessageType RM){
 
 void CollisionAvoidance::sendMessageCA(vector<Message> packets){
     while(packets.size()>0){
-        Message sendThisMessage = packets.front();
+        
         //pop the same message out of senderMessageVector.
 	
         //Je mag deze wel erasen, maar zorg ervoor dat hij eerst in een 
         //andere vector<Message> opgeslagen wordt. Zodat pas bij een ACK hij daadwerkelijk loesoe is.
         //EN tot die tijd evt. opnieuw gestuurd kan worden bij geen ACK.
-        packets.erase(packets.begin());
-        int rn = (rand() % 50);
+        
+        int rn = (rand() % 200);
         std::this_thread::sleep_for(std::chrono::milliseconds(rn));
-        if(queueIsBusy(getReceivedMessageType()) == false){
+        if(queueIsBusy(getReceivedMessageType()) == false && client->receivedACK){ // && ReceivedPrevACK == TRUE
             printf(" free to send");
+            packets.erase(packets.begin());
+            Message sendThisMessage = packets.front();
+            senderQueue->push(sendThisMessage);
+        }
+        else if(queueIsBusy(getReceivedMessageType()) == false && !client->receivedACK){
+            printf(" free to re send prev message");
+            Message sendThisMessage = packets.front();
             senderQueue->push(sendThisMessage);
         }
     }
