@@ -4,7 +4,7 @@
 #include "PacketGenerator.hpp"
 #include "CollisionAvoidance.h"
 #include <vector>
-//#include "DVR.h"
+#include "DVR.h"
 
 #ifndef PACKET_PROCESSOR_H
 #define PACKET_PROCESSOR_H
@@ -14,13 +14,14 @@ class PacketProcessor {
         PacketGenerator *PG;
         CollisionAvoidance *CA;
         Client *client;
-        //DVR *DVR;
+        DVR *dvr;
         vector<char> buffer;
+        vector<vector<int>> internalRoutingTable;
         int sendingSrc;
         vector<vector<int>>* routingTable;
 
     public:
-        PacketProcessor(PacketGenerator *PG, CollisionAvoidance *CA, Client *client, vector<vector<int>>* routingTable);
+        PacketProcessor(PacketGenerator *PG, CollisionAvoidance *CA, Client *client, DVR *dvr, vector<vector<int>>* routingTable);
 
         void processDataPacket(Message);
         void processAckPacket(Message);

@@ -5,6 +5,9 @@
 #include "CollisionAvoidance.h"
 #include "PacketGenerator.hpp"
 
+#ifndef DVR_H
+#define DVR_H
+
 #include <string>
 #include <cstring>
 #include <vector>
@@ -26,3 +29,4 @@ class DVR {
         void timerChecker(vector<vector<int>>& routingTable, bool& sendRoutingTable);
         void resetTimer(int incomingSourceAddress);
 };
+#endif

@@ -15,12 +15,12 @@
 
 #include "PacketProcessor.hpp"
 
-PacketProcessor::PacketProcessor(PacketGenerator* PG, CollisionAvoidance* CA, Client *client, vector<vector<int>>* routingTable){
+PacketProcessor::PacketProcessor(PacketGenerator* PG, CollisionAvoidance* CA, Client *client, DVR *dvr, vector<vector<int>>* routingTable){
     this->PG = PG;
     this->CA = CA;
     this->client = client;
+    this->dvr = dvr;
     this->routingTable = routingTable;
-    //this->DVR = DVR;
     this->buffer = {};
 }
 
