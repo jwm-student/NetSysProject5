@@ -101,16 +101,10 @@ int main() {
 				start = chrono::steady_clock::now();
 			}
 		}
-		for(auto& t : threads){
-			if(t.joinable()){
-				printf("stop thread ");
-				t.join();
-			}
-		}
 		
 		switch (temp.type) {
 		case DATA: {// We received a data frame!
-			printf(" ik maak nu een thread aan ");
+			// printf(" ik maak nu een thread aan ");
 			threads.emplace_back(std::bind(&PacketProcessor::processDataPacket, &PP, temp));
 			break;
 		}
