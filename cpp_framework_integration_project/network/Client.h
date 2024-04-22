@@ -27,7 +27,6 @@ public:
 	void listener(int sock);
 	void setMyAddr(int newAddr);
 	int getMyAddr();
-	void readInput(BlockingQueue< Message >*senderQueue, int addr);
 	int getSeqNum();
 	void setSeqNum(int seqNum);
 	void increaseSeqNum();

@@ -53,9 +53,6 @@ int main() {
 	PacketGenerator packetGenerator(&client,&routingTable);
 	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance, &routingTable);
 	
-
-	
-
 	string dummyInput;
 	client.startThread();
 
@@ -70,7 +67,6 @@ int main() {
 
 	thread inputHandler(readInput, &tui);
 	thread routingTableSender(std::bind(&DVR::sendUpdatedTable, &DVR, std::ref(routingTable), std::ref(sendRoutingTable)));
-	//thread timerChecker(std::bind(&DVR::timerChecker, &DVR, std::ref(routingTable), std::ref(sendRoutingTable)));
 
 
 	routingTable[client.getMyAddr()][client.getMyAddr()] = 0;
@@ -106,10 +102,9 @@ int main() {
 			case DATA: {// We received a data frame!
 				// printf(" ik maak nu een thread aan ");
 				threads.emplace_back(std::bind(&PacketProcessor::processDataPacket, &PP, temp));
-				for (char c : temp.data) {
-					std::cout << c << ",";
-				}
-				printf(" einde data van 1 bericht \n");
+				// for (char c : temp.data) {
+				// 	std::cout << c << ",";
+				// }
 				break;
 			}
 			case DATA_SHORT:{ // We received a short data frame!

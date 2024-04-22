@@ -30,6 +30,8 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
     // cout << "processing data, dest addres = " << destAddress << ", srcaddress = " << srcAddress << ", Buffer size" << buffer.size() << endl;
 //    DVR.resetTimer(srcAddress);
 
+    //reset buffer
+    newBuffer.clear();
     if(client->getBuffer().size() == 0 && (destAddress == client->getMyAddr())){
             if((incomingMessage.data[1] & 0b01000000) == 0b01000000){ // if the message is part of longer message
                 cout << "message is longer than 1 packet!" << endl;
@@ -47,9 +49,6 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
                 //print the new buffer:
                 client->printBuffer();
 
-                // clear newBuffer
-                newBuffer.clear();
-
                 cout << "sending ACK!" << endl;
                 CA->sendMessageCA(ack); // send ack
             }
@@ -64,20 +63,12 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
                 client->increaseExpSeqNum();
                 vector<Message> ack = PG->generateAckPacket(receivedSeqNum, srcAddress);
                 
-                // Printing out received data
-                // cout << "Received a message from: " << srcAddress << ":\n" << endl;
-                // for (char c : newBuffer) {
-				//     std::cout << c;
-			    // }
                 client->printBuffer();
                 cout << "\n" << endl;
 
-                //clear newBuffer and buffer after receiving single message
-                newBuffer.clear();
-                // client->clearBuffer();
-
-                CA->setReceivedMessageType(FREE); //TO-DO: Solve less hacky
+                // CA->setReceivedMessageType(FREE);
                 CA->sendMessageCA(ack); // send ack
+                client->clearBuffer();
             }
 
     } else if(client->getBuffer().size() != 0 && (destAddress == client->getMyAddr())){
@@ -100,22 +91,17 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
                     // }
                 }
 
-                //clear newBuffer after usage
-                newBuffer.clear();
-
                 client->printBuffer();
                 CA->sendMessageCA(ack); // send ack
             }
             else{ //if last packet of a sequence
                 vector<Message> ack = PG->generateAckPacket(receivedSeqNum, srcAddress);
                 CA->sendMessageCA(ack); // send ack
-                incomingMessage.data.erase(newBuffer.begin(), newBuffer.begin()+2);
                 newBuffer.insert(newBuffer.end(),incomingMessage.data.begin(),incomingMessage.data.end());
+                newBuffer.erase(newBuffer.begin(), newBuffer.begin()+2);
                 client->setBuffer(newBuffer);
                 client->printBuffer();
-
                 client->clearBuffer();
-                newBuffer.clear();
             }
         } 
     }
