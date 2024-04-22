@@ -75,6 +75,12 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
                 buffer.insert(buffer.end(),incomingMessage.data.begin(),incomingMessage.data.end());
                 client->increaseExpSeqNum();
                 vector<Message> ack = PG->generateAckPacket(receivedSeqNum, srcAddress);
+                if((incomingMessage.data[1] & 0b01000000) == 0){
+                    cout << "Received a message from: " << srcAddress << ":\n" << endl;
+                    for (char c : buffer) {
+                        std::cout << c;
+                    }
+                }
                 CA->sendMessageCA(ack); // send ack
             }
             else{

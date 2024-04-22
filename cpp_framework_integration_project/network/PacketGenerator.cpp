@@ -275,7 +275,7 @@ vector<Message> PacketGenerator::generatePingPacket(Client* client){
     Message sendMessage;
     sendMessage = Message(DATA_SHORT, char_vec);
     output.push_back(sendMessage);
-
+    
 	return output;
 }
 
