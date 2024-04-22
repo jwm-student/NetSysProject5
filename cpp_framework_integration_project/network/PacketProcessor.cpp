@@ -15,11 +15,12 @@
 
 #include "PacketProcessor.hpp"
 
-PacketProcessor::PacketProcessor(PacketGenerator* PG, CollisionAvoidance* CA, Client *client, DVR *dvr){
+PacketProcessor::PacketProcessor(PacketGenerator* PG, CollisionAvoidance* CA, Client *client, DVR *dvr, vector<vector<int>>& routingTable){
     this->PG = PG;
     this->CA = CA;
     this->client = client;
     this->dvr = dvr;
+    this->internalRoutingTable = routingTable;
     this->buffer = {};
     cout << "packetprocessor initiated, buffer.size() = " << buffer.size() << endl;
 }
@@ -27,6 +28,7 @@ PacketProcessor::PacketProcessor(PacketGenerator* PG, CollisionAvoidance* CA, Cl
 void PacketProcessor::processDataPacket(Message incomingMessage){
     int destAddress = (incomingMessage.data[0] & 0b00110000) >> 4;
     int srcAddress = (incomingMessage.data[0] & 0b11000000) >> 6;
+    int receivedNextHopAddress = (incomingMessage.data[1] & 0b00011000) >> 3;
     cout << "processing data, dest addres = " << destAddress << ", srcaddress = " << srcAddress << ", Buffer size" << buffer.size() << endl;
     //dvr->resetTimer(srcAddress);
     if(buffer.size()== 0){
@@ -64,7 +66,28 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
             }
         } 
         // else if(){ //else if nextHop is me, perform this code and send the message to the new dest
+        else if (receivedNextHopAddress == client->getMyAddr()){
+            // Moet dit ook bij dit bericht?
+            int receivedSeqNum = (incomingMessage.data[1] & 0b00000111);
+            incomingMessage.data.erase(incomingMessage.data.begin(), incomingMessage.data.begin()+2);
+            buffer.insert(buffer.end(),incomingMessage.data.begin(),incomingMessage.data.end());
+            client->increaseExpSeqNum();
+            vector<Message> ack = PG->generateAckPacket(receivedSeqNum, srcAddress);
+            CA->setReceivedMessageType(FREE); //TO-DO: Solve less hacky
+            CA->sendMessageCA(ack);
+            // Go through all of the possible vias for the destination address and find the shortest path
+            int nextHopAddressCost = 99;
+            int nextHopAddress;
+            for (int i = 0; i < 4; i++){
+                if (internalRoutingTable[destAddress][i] < nextHopAddressCost){
+                    internalRoutingTable[destAddress][i] = nextHopAddressCost;
+                    nextHopAddress = i;
+                }
+            }
+            // GENERATE NEW MESSAGE WITH NEXTHOP AS INPUT
+            vector<Message> nextHopMessage;
 
+        }
         // }
         
         else {

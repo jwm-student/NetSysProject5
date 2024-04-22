@@ -15,11 +15,12 @@ class PacketProcessor {
         Client *client;
         DVR *dvr;
         vector<char> buffer;
+        vector<vector<int>> internalRoutingTable;
         int sendingSrc;
 
 
     public:
-        PacketProcessor(PacketGenerator *PG, CollisionAvoidance *CA, Client *client, DVR *dvr);
+        PacketProcessor(PacketGenerator *PG, CollisionAvoidance *CA, Client *client, DVR *dvr, vector<vector<int>>& routingTable);
 
         void processDataPacket(Message);
         void processAckPacket(Message);

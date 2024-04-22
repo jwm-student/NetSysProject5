@@ -63,7 +63,7 @@ int main() {
 	
 	DVR DVR(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
-	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client, &DVR);
+	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client, &DVR, &routingTable);
 
 	client.setMyAddr(tui.setDestinationAddress()); // set address to input of user
 

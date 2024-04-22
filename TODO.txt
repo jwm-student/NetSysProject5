@@ -8,4 +8,5 @@
 - Nieuwe ping message kunnen ontvangen en toevoegen aan de table
 - Table resetten na timeout
 
-Table does not get updated for people other than neighbors
+Laatste aanpassingen zitten in packetProcessor, dus daar weer verder gaan.
+- Maak een functie aan in packetGenerator die een nexthop als input kan hebben, en stuur deze dr uit.
