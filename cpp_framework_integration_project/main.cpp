@@ -106,6 +106,10 @@ int main() {
 			case DATA: {// We received a data frame!
 				// printf(" ik maak nu een thread aan ");
 				threads.emplace_back(std::bind(&PacketProcessor::processDataPacket, &PP, temp));
+				for (char c : temp.data) {
+					std::cout << c << ",";
+				}
+				printf(" einde data van 1 bericht \n");
 				break;
 			}
 			case DATA_SHORT:{ // We received a short data frame!

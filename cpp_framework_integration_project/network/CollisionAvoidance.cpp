@@ -31,7 +31,7 @@ void CollisionAvoidance::setReceivedMessageType(MessageType newMessageType){
 bool CollisionAvoidance::queueIsBusy(MessageType RM){
     while(getReceivedMessageType() == BUSY || getReceivedMessageType() == SENDING || getReceivedMessageType() == DATA || getReceivedMessageType() == DATA_SHORT){
         //printf("Ik ben aan het loopen");
-        int rn = (rand() % 50);
+        int rn = (rand() % 100);
         std::this_thread::sleep_for(std::chrono::milliseconds(rn));
     }
     return false;
@@ -39,25 +39,31 @@ bool CollisionAvoidance::queueIsBusy(MessageType RM){
 
 void CollisionAvoidance::sendMessageCA(vector<Message> packets){
     while(packets.size()>0){
-        
+        // printf(" Dit gebeurt er in CA: \n");
+        // for (const auto& message : packets) {
+        //         for (char c : message.data) {  // Zorg ervoor dat message.data een geldige container is
+        //         std::cout << c ;
+        //         }
+        //     }
+        // printf("<- Dit is het gehele bericht \n");
         //pop the same message out of senderMessageVector.
 	
         //Je mag deze wel erasen, maar zorg ervoor dat hij eerst in een 
         //andere vector<Message> opgeslagen wordt. Zodat pas bij een ACK hij daadwerkelijk loesoe is.
         //EN tot die tijd evt. opnieuw gestuurd kan worden bij geen ACK.
+        Message sendThisMessage = packets.front();
+        packets.erase(packets.begin());
         
         int rn = (rand() % 200);
         std::this_thread::sleep_for(std::chrono::milliseconds(rn));
-        if(queueIsBusy(getReceivedMessageType()) == false && client->receivedACK){ // && ReceivedPrevACK == TRUE
-            printf(" free to send");
-            packets.erase(packets.begin());
-            Message sendThisMessage = packets.front();
+        if(queueIsBusy(getReceivedMessageType()) == false){ // && ReceivedPrevACK == TRUE
+            // printf(" free to send");
             senderQueue->push(sendThisMessage);
         }
-        else if(queueIsBusy(getReceivedMessageType()) == false && !client->receivedACK){
-            printf(" free to re send prev message");
-            Message sendThisMessage = packets.front();
-            senderQueue->push(sendThisMessage);
-        }
+        // else if(queueIsBusy(getReceivedMessageType()) == false && !client->receivedACK){
+        //     printf(" free to re send prev message");
+        //     Message sendThisMessage = packets.front();
+        //     senderQueue->push(sendThisMessage);
+        // }
     }
 }

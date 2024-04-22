@@ -58,11 +58,11 @@ void TUI::processInput(std::string input){
         cout << "What is the message would you like to send?" << endl;
         getline(cin, messageContent);
         if(messageContent.size() < (16 * 30)){
-            cout << "Broadcasting your message" << endl;
+            cout << "Broadcasting your message not yet working" << endl;
             // Give input to network layer
-            vector<Message> packets = packetGenerator->generatePackets(messageContent);
+            // vector<Message> packets = packetGenerator->generatePackets(messageContent);
 			//Send message via Collision Avoidance
-			collisionAvoidance->sendMessageCA(packets);
+			// collisionAvoidance->sendMessageCA(packets);
         }
         else{
             cout << "You're message is too long. Please use the command again and write a shorter message" << endl;
@@ -78,7 +78,14 @@ void TUI::processInput(std::string input){
             cout << "Sending your message to " << destAddr << endl;
             // Give input to network layer
             vector<Message> packets = packetGenerator->generatePackets(messageContent,destAddr);
-            
+
+            // printf("De start van de TUI wat daadwerkelijk verstuurd:   ");
+            // for (const auto& message : packets) {
+            //     for (char c : message.data) {  // Zorg ervoor dat message.data een geldige container is
+            //     std::cout << c ;
+            //     }
+            // }
+            // printf("\n we sturen packet op!        \n");
 			//Send message via Collision Avoidance
 			collisionAvoidance->sendMessageCA(packets);
         }

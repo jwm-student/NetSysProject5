@@ -21,14 +21,13 @@ PacketProcessor::PacketProcessor(PacketGenerator* PG, CollisionAvoidance* CA, Cl
     this->client = client;
     this->dvr = dvr;
     this->routingTable = routingTable;
-    this->buffer = {};
 }
 
 void PacketProcessor::processDataPacket(Message incomingMessage){
     int destAddress = (incomingMessage.data[0] & 0b00110000) >> 4;
     int srcAddress = (incomingMessage.data[0] & 0b11000000) >> 6;
     int nextHop = (incomingMessage.data[1] & 0b00011000) >> 3;
-    cout << "processing data, dest addres = " << destAddress << ", srcaddress = " << srcAddress << ", Buffer size" << buffer.size() << endl;
+    // cout << "processing data, dest addres = " << destAddress << ", srcaddress = " << srcAddress << ", Buffer size" << buffer.size() << endl;
 //    DVR.resetTimer(srcAddress);
 
     if(buffer.size()== 0 && (destAddress == client->getMyAddr())){

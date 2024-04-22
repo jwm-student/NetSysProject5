@@ -20,28 +20,37 @@ PacketGenerator::PacketGenerator(Client* client, vector<vector<int>>* routingTab
     this->routingTable = routingTable;
 }
 
-vector<Message> PacketGenerator::generatePackets(std::string input){
-    vector<Message> output;
-    if(input.size() > 30){
-        output = generateMultiPacket(input);
-    }
-    else{
-        output = generateSingleDataPacket(input);
-    }
-    return output;
-}
+// vector<Message> PacketGenerator::generatePackets(std::string input){
+//     vector<Message> output;
+//     if(input.size() > 30){
+//         output = generateMultiPacket(input);
+//     }
+//     else{
+//         output = generateSingleDataPacket(input);
+//     }
+//     return output;
+// }
 
 vector<Message> PacketGenerator::generatePackets(std::string input, int destAddr){
     vector<Message> output;
     if(input.size() > 30){
         if(destAddr != findNextHop(destAddr)){ // If it is not a direct neighbour, make sure nextHop is added
             vector<Message> notYetOutput = generateMultiPacket(input, destAddr);
+            // std::cout<< "input string generatePackets met destAddr: " <<  input << std::endl;
+
             for(auto m : notYetOutput){
                 output.push_back(generateNextHopPacket(m,destAddr)); // Change each message to message with nexthop
             }
         }
         else{
+            // std::cout<< "input string generatePackets MultiPacket: " <<  input << std::endl;
+
             output = generateMultiPacket(input,destAddr);
+            // for (const auto& message : output) {
+            //     for (char c : message.data) { 
+            //     std::cout << c << ",";
+            //     }
+            // }
         }
     }
     else{
@@ -50,7 +59,15 @@ vector<Message> PacketGenerator::generatePackets(std::string input, int destAddr
             output.push_back(generateNextHopPacket(notYetOutput[0],destAddr)); // Change each message to message with nexthop
         }
         else{
+
+            
             output = generateSingleDataPacket(input, destAddr);
+            // for (const auto& message : output) {
+            //     for (char c : message.data) {  // Zorg ervoor dat message.data een geldige container is
+            //     std::cout << c << ",";
+            //     }
+            // }
+            // printf(" dit is de output van single data packet");
         }
     }
     return output;

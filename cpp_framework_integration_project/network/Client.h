@@ -15,6 +15,7 @@ private:
 	int seqNum;
 	int expSeqNum;
 	int myAddr;
+	vector<char> buffer;
 	
 
 	int openSocket();
@@ -33,6 +34,11 @@ public:
 	int getExpSeqNum();
 	void setExpSeqNum(int expSeqNum);
 	void increaseExpSeqNum();
+
+	vector<char> getBuffer();
+	void setBuffer(vector<char>);
+	void clearBuffer();
+	void printBuffer();
 	BlockingQueue<Message>* getSenderQueue();
 };
 

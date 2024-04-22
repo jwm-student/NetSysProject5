@@ -43,6 +43,29 @@ int Client::getMyAddr(){
 	return myAddr;
 }
 
+vector<char> Client::getBuffer(){
+	return buffer;
+
+}
+void Client::setBuffer(vector<char> newBufferInfo){
+	//Hier moet de code voor toevoegen van buffer informatie
+	for(auto& newB : newBufferInfo){
+		buffer.push_back(newB);
+	}
+}
+void Client::clearBuffer(){
+	buffer.clear();
+}
+void Client::printBuffer(){
+	printf("\n the buffer: \n");
+	for(auto& b : buffer){
+		cout << b;
+	}
+	printf("\n end of buffer \n");
+
+}
+
+
 void Client::setSeqNum(int seqNum){
 	this->seqNum = seqNum;
 }
