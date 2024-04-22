@@ -20,7 +20,7 @@ std::string SERVER_ADDR = "netsys.ewi.utwente.nl"; //"127.0.0.1"
 // The port to connect to. 8954 for the simulation server
 int SERVER_PORT = 8954;
 // The frequency to connect on.
-int FREQUENCY = 8090;//TODO: Set this to your group frequency!
+int FREQUENCY = 8010;//TODO: Set this to your group frequency!
 // The token you received for your frequency range
 std::string TOKEN = "cpp-05-AYKI3U9SX758O0EPJT";
 
@@ -35,8 +35,6 @@ void readInput(TUI *tui) {
 		tui->processInput(input);
 	}
 }
-
-
 int main() {
 	BlockingQueue< Message > receiverQueue; // Queue messages will arrive in
 	BlockingQueue< Message > senderQueue; // Queue for data to transmit	
@@ -78,7 +76,7 @@ int main() {
 	routingTable[client.getMyAddr()][client.getMyAddr()] = 0;
 	cout << "Constructed routingSender Thread" << endl;
 	chrono::steady_clock::time_point start = chrono::steady_clock::now();
-	
+	std::vector<std::thread> threads;
 	//Handle messages from the server / audio framework
 	while(true){
 
@@ -103,24 +101,17 @@ int main() {
 				start = chrono::steady_clock::now();
 			}
 		}
-
+		for(auto& t : threads){
+			if(t.joinable()){
+				printf("stop thread ");
+				t.join();
+			}
+		}
 		
 		switch (temp.type) {
 		case DATA: {// We received a data frame!
-			// std::cout << "DATA: ";
-			// for (char c : temp.data) {
-			// 	std::cout << c << ",";
-			// }
-			PP.processDataPacket(temp);
-			// if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
-			// 	vector<Message> ackVector = packetGenerator.generateAckPacket((temp.data[1] & 0b111),&client,((temp.data[0] & 0b11000000) >> 6));
-			// 	bitset<8> tempdatazero((temp.data[0]>>6));
-			// 	bitset<8> seqNumSent((temp.data[1] & 0b111));
-			// 	std::cout << "Tempdatazero shifted: " << tempdatazero << std::endl;
-			// 	std::cout << "seqnumSent: " << seqNumSent << std::endl;
-			// 	senderQueue.push(ackVector[0]);	
-			// }
-			// std::cout << std::endl;
+			printf(" ik maak nu een thread aan ");
+			threads.emplace_back(std::bind(&PacketProcessor::processDataPacket, &PP, temp));
 			break;
 		}
 		case DATA_SHORT:{ // We received a short data frame!
@@ -162,5 +153,10 @@ int main() {
 			break;
 		}
 	}
-	
+	for(auto& t : threads){
+		if(t.joinable()){
+			printf("stop thread ");
+			t.join();
+		}
+	}
 }
