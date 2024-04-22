@@ -101,7 +101,7 @@ void TUI::processInput(std::string input){
     else if (input == "-Q")
     {
         cout << "Use 'Ctrl + C' to quit the application." << endl;
-    }    
+    }
 }
 
 void TUI::printMenu(){

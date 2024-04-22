@@ -30,7 +30,7 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
     // cout << "processing data, dest addres = " << destAddress << ", srcaddress = " << srcAddress << ", Buffer size" << buffer.size() << endl;
 //    DVR.resetTimer(srcAddress);
 
-    if(buffer.size()== 0 && (destAddress == client->getMyAddr())){
+    if(client->getBuffer().size() == 0 && (destAddress == client->getMyAddr())){
             if((incomingMessage.data[1] & 0b01000000) == 0b01000000){ // if the message is part of longer message
                 cout << "message is longer than 1 packet!" << endl;
                 sendingSrc = srcAddress;
@@ -38,9 +38,18 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
                 client->setExpSeqNum(receivedSeqNum);
                 incomingMessage.data.erase(incomingMessage.data.begin(), incomingMessage.data.begin()+2);
                 // Add data to buffer
-                buffer.insert(buffer.end(),incomingMessage.data.begin(),incomingMessage.data.end());
+                newBuffer.insert(newBuffer.end(),incomingMessage.data.begin(),incomingMessage.data.end());
+                client->setBuffer(newBuffer);
+
                 client->increaseExpSeqNum();
                 vector<Message> ack = PG->generateAckPacket(receivedSeqNum, srcAddress);
+
+                //print the new buffer:
+                client->printBuffer();
+
+                // clear newBuffer
+                newBuffer.clear();
+
                 cout << "sending ACK!" << endl;
                 CA->sendMessageCA(ack); // send ack
             }
@@ -48,45 +57,67 @@ void PacketProcessor::processDataPacket(Message incomingMessage){
                 int receivedSeqNum = (incomingMessage.data[1] & 0b00000111);
                 incomingMessage.data.erase(incomingMessage.data.begin(), incomingMessage.data.begin()+2);
                 // Add data to buffer
-                buffer.insert(buffer.end(),incomingMessage.data.begin(),incomingMessage.data.end());
+                newBuffer.insert(newBuffer.end(),incomingMessage.data.begin(),incomingMessage.data.end());
+                client->setBuffer(newBuffer);
+
+
                 client->increaseExpSeqNum();
                 vector<Message> ack = PG->generateAckPacket(receivedSeqNum, srcAddress);
                 
                 // Printing out received data
-                cout << "Received a message from: " << srcAddress << ":\n" << endl;
-                for (char c : buffer) {
-				    std::cout << c;
-			    }
+                // cout << "Received a message from: " << srcAddress << ":\n" << endl;
+                // for (char c : newBuffer) {
+				//     std::cout << c;
+			    // }
+                client->printBuffer();
                 cout << "\n" << endl;
-                buffer.clear();
+
+                //clear newBuffer and buffer after receiving single message
+                newBuffer.clear();
+                // client->clearBuffer();
+
                 CA->setReceivedMessageType(FREE); //TO-DO: Solve less hacky
                 CA->sendMessageCA(ack); // send ack
             }
 
-    } else if(buffer.size() != 0 && (destAddress == client->getMyAddr())){
+    } else if(client->getBuffer().size() != 0 && (destAddress == client->getMyAddr())){
         cout << "received another message, buffer is non-zero!" << endl;
         // If I'm the destination and the sender is the same sender as before.
         if((destAddress == client->getMyAddr()) && (srcAddress == sendingSrc)){
             int receivedSeqNum = (incomingMessage.data[1] & 0b00000111);
             if(receivedSeqNum == client->getExpSeqNum()){
-                incomingMessage.data.erase(buffer.begin(), buffer.begin()+2);
+                incomingMessage.data.erase(newBuffer.begin(), newBuffer.begin()+2);
                 // Add data to buffer
-                buffer.insert(buffer.end(),incomingMessage.data.begin(),incomingMessage.data.end());
+                newBuffer.insert(newBuffer.end(),incomingMessage.data.begin(),incomingMessage.data.end());
+                client->setBuffer(newBuffer);
+
                 client->increaseExpSeqNum();
                 vector<Message> ack = PG->generateAckPacket(receivedSeqNum, srcAddress);
                 if((incomingMessage.data[1] & 0b01000000) == 0){
                     cout << "Received a message from: " << srcAddress << ":\n" << endl;
-                    for (char c : buffer) {
-                        std::cout << c;
-                    }
+                    // for (char c : buffer) {
+                        // std::cout << c;
+                    // }
                 }
+
+                //clear newBuffer after usage
+                newBuffer.clear();
+
+                client->printBuffer();
                 CA->sendMessageCA(ack); // send ack
             }
-            else{
+            else{ //if last packet of a sequence
                 vector<Message> ack = PG->generateAckPacket(receivedSeqNum, srcAddress);
                 CA->sendMessageCA(ack); // send ack
+                incomingMessage.data.erase(newBuffer.begin(), newBuffer.begin()+2);
+                newBuffer.insert(newBuffer.end(),incomingMessage.data.begin(),incomingMessage.data.end());
+                client->setBuffer(newBuffer);
+                client->printBuffer();
+
+                client->clearBuffer();
+                newBuffer.clear();
             }
-        }
+        } 
     }
     // If I'm not the destination, check if I'm the nextHop.
     else if (nextHop == client->getMyAddr())
