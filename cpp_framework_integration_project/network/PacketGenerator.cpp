@@ -290,7 +290,7 @@ vector<Message> PacketGenerator::generateRoutingPacket(vector<char> sendingTable
 	int firstByte = senderAddress << 6; 
 
 	// Set second 2 bits to be destination address
-	int destAddress = 0b11; // TO-DO: implement dynamic destination address
+	int destAddress = client->getMyAddr(); // TO-DO: implement dynamic destination address
 	firstByte = firstByte | (destAddress << 4);
     // Create 2nd Header Byte
     int secondByte = 0b10000000;
@@ -325,6 +325,8 @@ Message PacketGenerator::generateNextHopPacket(Message message, int destAddr){
     newSecondByte = newSecondByte | rightThreeBits;
     newSecondByte = newSecondByte | (nextHop << 3);
     message.data[1] = newSecondByte;
+    bitset<8> secondBytebit(newSecondByte);
+    cout << "SEcondBYte of nexthop: " << secondBytebit << endl;
     return message;
 };
 

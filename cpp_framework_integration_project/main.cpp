@@ -56,18 +56,15 @@ int main() {
 	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance);
 	
 
-	client.setMyAddr(tui.setDestinationAddress()); // set address to input of user
+	
 
 	string dummyInput;
 	client.startThread();
 
-	cout << "Press enter to start the client " << endl;
-	getline(cin,dummyInput);
-	
 	DVR DVR(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
 
 	PacketProcessor PP(&packetGenerator, &collisionAvoidance, &client, &DVR, &routingTable);
-
+	
 	client.setMyAddr(tui.setDestinationAddress()); // set address to input of user
 
 	// Sends the first discovery ping
@@ -107,63 +104,54 @@ int main() {
 			}
 		}
 
-		
-		switch (temp.type) {
-		case DATA: {// We received a data frame!
-			// std::cout << "DATA: ";
-			// for (char c : temp.data) {
-			// 	std::cout << c << ",";
-			// }
-			PP.processDataPacket(temp);
-			// if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
-			// 	vector<Message> ackVector = packetGenerator.generateAckPacket((temp.data[1] & 0b111),&client,((temp.data[0] & 0b11000000) >> 6));
-			// 	bitset<8> tempdatazero((temp.data[0]>>6));
-			// 	bitset<8> seqNumSent((temp.data[1] & 0b111));
-			// 	std::cout << "Tempdatazero shifted: " << tempdatazero << std::endl;
-			// 	std::cout << "seqnumSent: " << seqNumSent << std::endl;
-			// 	senderQueue.push(ackVector[0]);	
-			// }
-			// std::cout << std::endl;
-			break;
-		}
-		case DATA_SHORT:{ // We received a short data frame!
-			std::cout << "DATA_SHORT: ";
-			for (char c : temp.data) {
-				std::cout << c << ",";
+		if(tableConverged){
+			switch (temp.type) {
+			case DATA: {// We received a data frame!
+				// std::cout << "DATA: ";
+				// for (char c : temp.data) {
+				// 	std::cout << c << ",";
+				// }
+				PP.processDataPacket(temp);
+				break;
 			}
-			if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
-				bitset<8> shortReceived(temp.data[0]);
-				bitset<8> shortReceivedScnd(temp.data[1]);
-				std::cout << "First bit of ACK received: " << shortReceived << std::endl;
-				std::cout << "2nd bit of ACK received: " << shortReceivedScnd << std::endl;
+			case DATA_SHORT:{ // We received a short data frame!
+				std::cout << "DATA_SHORT: ";
+				for (char c : temp.data) {
+					std::cout << c << ",";
+				}
+				if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
+					bitset<8> shortReceived(temp.data[0]);
+					bitset<8> shortReceivedScnd(temp.data[1]);
+					std::cout << "First bit of ACK received: " << shortReceived << std::endl;
+					std::cout << "2nd bit of ACK received: " << shortReceivedScnd << std::endl;
+				}
+				break;
 			}
-			break;
-		}
-		case FREE: // The channel is no longer busy (no nodes are sending within our detection range)
-			std::cout << "FREE" << std::endl;
-			break;
-		case BUSY: // The channel is busy (A node is sending within our detection range)
-			std::cout << "BUSY" << std::endl;
-			break;
-		case SENDING: // This node is sending
-			std::cout << "SENDING" << std::endl;
-			break;
-		case DONE_SENDING: // This node is done sending
-			std::cout << "DONE_SENDING" << std::endl;
-			break;
-		case END: // Server / audio framework disconnect message. You don't have to handle this
-			std::cout << "END" << std::endl;
-			break;
-		case HELLO: // Server / audio framework hello message. You don't have to handle this
-			std::cout << "HELLO" << std::endl;
-			break;
-		case TOKEN_ACCEPTED: // Server / audio framework hello message. You don't have to handle this
-			std::cout << "Token Valid!" << std::endl;
-			break;
-		case TOKEN_REJECTED: // Server / audio framework hello message. You don't have to handle this
-			std::cout << "Token Rejected!" << std::endl;
-			break;
+			case FREE: // The channel is no longer busy (no nodes are sending within our detection range)
+				std::cout << "FREE" << std::endl;
+				break;
+			case BUSY: // The channel is busy (A node is sending within our detection range)
+				std::cout << "BUSY" << std::endl;
+				break;
+			case SENDING: // This node is sending
+				std::cout << "SENDING" << std::endl;
+				break;
+			case DONE_SENDING: // This node is done sending
+				std::cout << "DONE_SENDING" << std::endl;
+				break;
+			case END: // Server / audio framework disconnect message. You don't have to handle this
+				std::cout << "END" << std::endl;
+				break;
+			case HELLO: // Server / audio framework hello message. You don't have to handle this
+				std::cout << "HELLO" << std::endl;
+				break;
+			case TOKEN_ACCEPTED: // Server / audio framework hello message. You don't have to handle this
+				std::cout << "Token Valid!" << std::endl;
+				break;
+			case TOKEN_REJECTED: // Server / audio framework hello message. You don't have to handle this
+				std::cout << "Token Rejected!" << std::endl;
+				break;
+			}
 		}
 	}
-	
 }

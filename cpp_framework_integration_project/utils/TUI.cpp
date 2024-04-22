@@ -111,7 +111,7 @@ void TUI::printReachableNodes(){
     const std::vector<std::vector<int>>& vec = *routingTable;
     cout << "Nodes that are reachable: \n" << endl;
     for(int i = 0; i < 4; i++){
-        for(int j = 0; i < 4; j++){
+        for(int j = 0; j < 4; j++){
             if(vec[i][j] < 99){
                 cout << i << endl;
                 break; 
