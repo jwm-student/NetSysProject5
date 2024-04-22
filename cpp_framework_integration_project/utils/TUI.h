@@ -19,7 +19,7 @@ class TUI {
         char my_addr;
 
     public:
-        TUI(Client *client, PacketGenerator *packetGenerator, CollisionAvoidance *collisionAvoidance);
+        TUI(Client *client, PacketGenerator *packetGenerator, CollisionAvoidance *collisionAvoidance, vector<vector<int>>* routingTable);
         int setDestinationAddress();
         void printMenu();
         void printReachableNodes();

@@ -26,6 +26,7 @@ DVR::DVR(BlockingQueue< Message >*senderQueue, Client* client, PacketGenerator* 
 void DVR::sendPing(){
     Message sendMessage;
     vector<Message> pingVector = packetGenerator->generatePingPacket(client);
+	cout << "Send ping to CA" << endl;
     AC->sendMessageCA(pingVector);
 }
 

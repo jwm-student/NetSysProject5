@@ -17,7 +17,7 @@
 
 using namespace std;
 
-TUI::TUI(Client* client, PacketGenerator *packetGenerator, CollisionAvoidance *collisionAvoidance){
+TUI::TUI(Client* client, PacketGenerator *packetGenerator, CollisionAvoidance *collisionAvoidance, vector<vector<int>>* routingTable){
     this->client = client;
     this->packetGenerator = packetGenerator;
     this->collisionAvoidance = collisionAvoidance;
@@ -108,15 +108,32 @@ void TUI::printMenu(){
 }
 
 void TUI::printReachableNodes(){
-    const std::vector<std::vector<int>>& vec = *routingTable;
-    cout << "Nodes that are reachable: \n" << endl;
-    for(int i = 0; i < 4; i++){
-        for(int j = 0; j < 4; j++){
-            if(vec[i][j] < 99){
-                cout << i << endl;
-                break; 
+    // Check if the pointer is not null
+    if (routingTable) {
+        // Dereference the pointer to access the vector
+        const std::vector<std::vector<int>>& vec = *routingTable;
+
+        std::cout << "Nodes that are reachable: \n" << std::endl;
+
+        // Loop through the rows
+        for(size_t i = 0; i < vec.size(); i++) {
+            // Loop through the columns
+            for(size_t j = 0; j < vec[i].size(); j++) {
+                // Access the element using at() function to perform bounds checking
+                try {
+                    if(vec.at(i).at(j) < 99) {
+                        std::cout << i << std::endl;
+                        break; 
+                    }
+                } catch(const std::out_of_range& e) {
+                    std::cerr << "Error: Out of range access at (" << i << ", " << j << ")" << std::endl;
+                    return;
+                }
             }
         }
+    }
+    else {
+        std::cerr << "Error: null pointer to routing table" << std::endl;
     }
 }
 

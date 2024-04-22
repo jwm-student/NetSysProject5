@@ -51,7 +51,7 @@ int main() {
 	Client client = Client(SERVER_ADDR, my_addr, SERVER_PORT, FREQUENCY, TOKEN, &senderQueue, &receiverQueue);
 	CollisionAvoidance collisionAvoidance(&senderQueue);
 	PacketGenerator packetGenerator(&client,&routingTable);
-	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance);
+	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance, &routingTable);
 	
 
 	
@@ -101,50 +101,51 @@ int main() {
 				start = chrono::steady_clock::now();
 			}
 		}
-		
-		switch (temp.type) {
-		case DATA: {// We received a data frame!
-			// printf(" ik maak nu een thread aan ");
-			threads.emplace_back(std::bind(&PacketProcessor::processDataPacket, &PP, temp));
-			break;
-		}
-		case DATA_SHORT:{ // We received a short data frame!
-			std::cout << "DATA_SHORT: ";
-			for (char c : temp.data) {
-				std::cout << c << ",";
+		if(tableConverged){
+			switch (temp.type) {
+			case DATA: {// We received a data frame!
+				// printf(" ik maak nu een thread aan ");
+				threads.emplace_back(std::bind(&PacketProcessor::processDataPacket, &PP, temp));
+				break;
 			}
-			if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
-				bitset<8> shortReceived(temp.data[0]);
-				bitset<8> shortReceivedScnd(temp.data[1]);
-				std::cout << "First bit of ACK received: " << shortReceived << std::endl;
-				std::cout << "2nd bit of ACK received: " << shortReceivedScnd << std::endl;
+			case DATA_SHORT:{ // We received a short data frame!
+				std::cout << "DATA_SHORT: ";
+				for (char c : temp.data) {
+					std::cout << c << ",";
+				}
+				if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
+					bitset<8> shortReceived(temp.data[0]);
+					bitset<8> shortReceivedScnd(temp.data[1]);
+					std::cout << "First bit of ACK received: " << shortReceived << std::endl;
+					std::cout << "2nd bit of ACK received: " << shortReceivedScnd << std::endl;
+				}
+				break;
 			}
-			break;
-		}
-		case FREE: // The channel is no longer busy (no nodes are sending within our detection range)
-			std::cout << "FREE" << std::endl;
-			break;
-		case BUSY: // The channel is busy (A node is sending within our detection range)
-			std::cout << "BUSY" << std::endl;
-			break;
-		case SENDING: // This node is sending
-			std::cout << "SENDING" << std::endl;
-			break;
-		case DONE_SENDING: // This node is done sending
-			std::cout << "DONE_SENDING" << std::endl;
-			break;
-		case END: // Server / audio framework disconnect message. You don't have to handle this
-			std::cout << "END" << std::endl;
-			break;
-		case HELLO: // Server / audio framework hello message. You don't have to handle this
-			std::cout << "HELLO" << std::endl;
-			break;
-		case TOKEN_ACCEPTED: // Server / audio framework hello message. You don't have to handle this
-			std::cout << "Token Valid!" << std::endl;
-			break;
-		case TOKEN_REJECTED: // Server / audio framework hello message. You don't have to handle this
-			std::cout << "Token Rejected!" << std::endl;
-			break;
+			case FREE: // The channel is no longer busy (no nodes are sending within our detection range)
+				std::cout << "FREE" << std::endl;
+				break;
+			case BUSY: // The channel is busy (A node is sending within our detection range)
+				std::cout << "BUSY" << std::endl;
+				break;
+			case SENDING: // This node is sending
+				std::cout << "SENDING" << std::endl;
+				break;
+			case DONE_SENDING: // This node is done sending
+				std::cout << "DONE_SENDING" << std::endl;
+				break;
+			case END: // Server / audio framework disconnect message. You don't have to handle this
+				std::cout << "END" << std::endl;
+				break;
+			case HELLO: // Server / audio framework hello message. You don't have to handle this
+				std::cout << "HELLO" << std::endl;
+				break;
+			case TOKEN_ACCEPTED: // Server / audio framework hello message. You don't have to handle this
+				std::cout << "Token Valid!" << std::endl;
+				break;
+			case TOKEN_REJECTED: // Server / audio framework hello message. You don't have to handle this
+				std::cout << "Token Rejected!" << std::endl;
+				break;
+			}
 		}
 	}
 	for(auto& t : threads){
