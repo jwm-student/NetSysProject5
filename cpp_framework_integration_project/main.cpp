@@ -46,7 +46,16 @@ int main() {
 	bool input_valid = false;
 	string addrInput;
 	int my_addr = -1; // initialized to wrong value so it has to be changed.
-	
+	while(!input_valid){
+		getline(cin,addrInput);
+		if(addrInput == "0" || addrInput == "1" || addrInput == "2" || addrInput == "3"){
+			input_valid = true;
+		}
+		else{
+			cout << "Invalid input, please enter 0, 1, 2 or 3." << addrInput <<endl;
+		}
+	}
+	my_addr = addrInput.at(0) - '0';
 	// DVR variables
 	bool tableConverged = false;
 	bool sendRoutingTable = false;
@@ -58,10 +67,8 @@ int main() {
 	CollisionAvoidance collisionAvoidance(&senderQueue);
 	PacketGenerator packetGenerator(&client);
 	TUI tui = TUI(&client, &packetGenerator, &collisionAvoidance);
-	
 
-	client.setMyAddr(tui.setDestinationAddress()); // set address to input of user
-
+	// client.setMyAddr(tui.setDestinationAddress()); // set address to input of user
 	client.startThread();
 	
 	DVR dvr(&senderQueue, &client, &packetGenerator, &collisionAvoidance);
@@ -128,7 +135,7 @@ int main() {
 			for (char c : temp.data) {
 				std::cout << c << ",";
 			}
-			if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr() -'0')){
+			if(((temp.data[0] & 0b00110000) >> 4) == (client.getMyAddr())){
 				bitset<8> shortReceived(temp.data[0]);
 				bitset<8> shortReceivedScnd(temp.data[1]);
 				std::cout << "First bit of ACK received: " << shortReceived << std::endl;
@@ -162,5 +169,4 @@ int main() {
 			break;
 		}
 	}
-	
 }

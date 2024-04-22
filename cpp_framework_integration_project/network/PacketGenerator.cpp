@@ -77,7 +77,7 @@ vector<Message> PacketGenerator::generateMultiPacket(std::string input){
 	vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
 
 	/// Add header
-	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	int senderAddress = client->getMyAddr(); // This gives the true integer value (0, 1, 2 or 3)
 	// Set first 2 bits to be the source address
 	int firstByte = senderAddress << 6; 
 
@@ -126,7 +126,7 @@ vector<Message> PacketGenerator::generateMultiPacket(std::string input, int dest
 	vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
 
 	/// Add header
-	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	int senderAddress = client->getMyAddr(); // This gives the true integer value (0, 1, 2 or 3)
 	// Set first 2 bits to be the source address
 	int firstByte = senderAddress << 6; 
 
@@ -175,7 +175,7 @@ vector<Message> PacketGenerator::generateSingleDataPacket(std::string input){
 	vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
 
 	/// Add header
-	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	int senderAddress = client->getMyAddr(); // This gives the true integer value (0, 1, 2 or 3)
 	// Set first 2 bits to be the source address
 	int firstByte = senderAddress << 6; 
 
@@ -210,7 +210,7 @@ vector<Message> PacketGenerator::generateSingleDataPacket(std::string input, int
 	vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
 
 	/// Add header
-	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	int senderAddress = client->getMyAddr(); // This gives the true integer value (0, 1, 2 or 3)
 	// Set first 2 bits to be the source address
 	int firstByte = senderAddress << 6; 
 
@@ -270,7 +270,7 @@ vector<Message> PacketGenerator::generateRoutingPacket(vector<char> sendingTable
 	vector<char> zeroVector = {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'};
 
 	/// Add header
-	int senderAddress = client->getMyAddr() - '0'; // This gives the true integer value (0, 1, 2 or 3)
+	int senderAddress = client->getMyAddr(); // This gives the true integer value (0, 1, 2 or 3)
 	// Set first 2 bits to be the source address
 	int firstByte = senderAddress << 6; 
 
